@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chofetz Chaim - Shmiras HaLashon App</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <!-- Login/Signup Modal -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <div class="auth-header">
+                <img src="/mysticminded-logo.png" alt="MysticMinded Logo" class="logo-image">
+                <h1 data-i18n="appTitle">🕊️ Chofetz Chaim</h1>
+                <p class="dedication" data-i18n="dedication">In honor of my Brother Yosef Yisroel Meyer named after the Chofetz Chaim for being such a role model on giving the benefit of the doubt and avoiding negative speech or judgement on others as well as my best friend Dr. Sima Bracha Shulman for being the greatest best friend a girl could have and for lending me her Shmiras halashon a lesson a day set with which I started to learn daily lessons and quickly found it so helpful in my daily growth and so life changing! May every lesson learned be in their righteous merit and in their zechus and may all their tefilot be answered amen!</p>
+                <p class="subtitle" data-i18n="subtitle">Your Guide to Shmiras HaLashon</p>
+            </div>
+            
+            <!-- Language Toggle -->
+            <div class="language-toggle">
+                <button id="languageToggle" class="lang-btn">עברית</button>
+            </div>
+            
+            <div class="auth-tabs">
+                <button class="tab-btn active" data-tab="login" data-i18n="signIn">Sign In</button>
+                <button class="tab-btn" data-tab="signup" data-i18n="signUp">Sign Up</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm" class="auth-form active">
+                <div class="form-group">
+                    <label for="loginEmail" data-i18n="email">Email</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword" data-i18n="password">Password</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="loginPassword" required>
+                        <button type="button" class="toggle-password" data-target="loginPassword">
+                            <span class="show-icon">👁️</span>
+                        </button>
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary" data-i18n="signIn">Sign In</button>
+            </form>
+
+            <!-- Signup Form -->
+            <form id="signupForm" class="auth-form">
+                <div class="form-group">
+                    <label for="signupName" data-i18n="fullName">Full Name</label>
+                    <input type="text" id="signupName" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail" data-i18n="email">Email</label>
+                    <input type="email" id="signupEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword" data-i18n="password">Password</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="signupPassword" required minlength="6">
+                        <button type="button" class="toggle-password" data-target="signupPassword">
+                            <span class="show-icon">👁️</span>
+                        </button>
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary" data-i18n="createAccount">Create Account</button>
+            </form>
+
+            <div id="authError" class="error-message"></div>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div id="appContainer" class="hidden">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="logo">
+                    <img src="/mysticminded-logo.png" alt="MysticMinded Logo" class="header-logo">
+                    <h1 data-i18n="appTitle">🕊️ Chofetz Chaim</h1>
+                </div>
+                <div class="header-right">
+                    <button id="languageToggleApp" class="lang-btn">עברית</button>
+                    <button id="dashboardBtn" class="icon-btn" title="Dashboard">Dashboard</button>
+                    <div class="user-menu">
+                        <button id="userMenuBtn" class="user-btn">
+                            <span id="userName">User</span>
+                            <span class="dropdown-icon">▼</span>
+                        </button>
+                        <div id="userDropdown" class="dropdown-menu hidden">
+                            <button id="profileBtn" data-i18n="myProfile">My Profile</button>
+                            <button id="streaksBtn" data-i18n="myProgress">My Progress</button>
+                            <button id="logoutBtn" data-i18n="signOut">Sign Out</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dedication Banner -->
+        <div class="dedication-banner">
+            <div class="dedication-content">
+                <p class="dedication-text">
+                    In honor of my Brother <strong>Yosef Yisroel Meyer</strong> named after the Chofetz Chaim for being such a role model on giving the benefit of the doubt and avoiding negative speech or judgement on others as well as my best friend <strong>Dr. Sima Bracha Shulman</strong> for being the greatest best friend a girl could have and for lending me her Shmiras halashon a lesson a day set with which I started to learn daily lessons and quickly found it so helpful in my daily growth and so life changing! May every lesson learned be in their righteous merit and in their zechus and may all their tefilot be answered amen! ❤️
+                </p>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Chat View -->
+            <div id="chatView" class="view">
+                <div class="chat-container">
+                    <div id="chatMessages" class="chat-messages">
+                        <div class="welcome-message">
+                            <h2 data-i18n="welcomeTitle">Shalom! 👋</h2>
+                            <p data-i18n="welcomeMessage">Welcome to your personal Shmiras HaLashon guide. Ask me anything about guarding your speech, avoiding lashon hara, or living the teachings of the Chofetz Chaim.</p>
+                            
+                            <!-- Important Disclaimer -->
+                            <div style="margin: 20px 0; padding: 20px; background: #fff3cd; border-left: 4px solid #ff9800; border-radius: 8px; color: #856404;">
+                                <p style="margin: 0 0 10px 0; font-weight: bold; font-size: 1em;">⚠️ Important Notice</p>
+                                <p style="margin: 0 0 10px 0; font-size: 0.9em; line-height: 1.5;">
+                                    This chatbot is <strong>not a rabbi</strong> and should not be relied upon for final halachic decisions. If answers are unclear or if you have further questions, please consult a qualified rabbi or call:
+                                </p>
+                                <div style="background: white; padding: 15px; border-radius: 8px; margin-top: 15px; border: 2px solid #ff9800;">
+                                    <p style="margin: 0 0 8px 0; font-weight: bold; color: #2c5aa0; font-size: 1.1em;">📞 THE SHMIRAS HALOSHON SHAILA HOTLINE</p>
+                                    <p style="margin: 0 0 8px 0; font-size: 0.9em; line-height: 1.6;">
+                                        <em>To say or not to say?</em> Whether it is for a shidduch, a job referral, or just among family or friends, the wrong words can do irreparable harm. And sometimes, so can silence. Our Shaila Hotline puts you in contact with expert rabbonim so that before you speak, you can be sure.
+                                    </p>
+                                    <p style="margin: 8px 0 0 0; font-size: 0.85em;"><strong>Hours:</strong> Evenings from 9:00 to 10:30 PM</p>
+                                    <p style="margin: 8px 0 0 0;">
+                                        <a href="tel:7189513696" style="display: inline-block; background: #2c5aa0; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; margin-top: 10px;">
+                                            📞 CALL: 718-951-3696
+                                        </a>
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="quick-questions">
+                                <p><strong data-i18n="tryAsking">Try asking:</strong></p>
+                                <button class="quick-q" data-q="What is lashon hara?" data-i18n="quickQuestion1">What is lashon hara?</button>
+                                <button class="quick-q" data-q="How can I avoid gossip at work?" data-i18n="quickQuestion2">How can I avoid gossip at work?</button>
+                                <button class="quick-q" data-q="What should I do if I hear lashon hara?" data-i18n="quickQuestion3">What should I do if I hear lashon hara?</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-input-container">
+                        <form id="chatForm">
+                            <button type="button" id="voiceBtn" class="voice-btn" title="Record your question">
+                                <span class="voice-icon">🎤</span>
+                            </button>
+                            <input 
+                                type="text" 
+                                id="messageInput" 
+                                data-i18n="messagePlaceholder"
+                                placeholder="Ask about Shmiras HaLashon..."
+                                autocomplete="off"
+                            >
+                            <button type="submit" id="sendBtn" class="send-btn">
+                                <span class="send-icon">📤</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard View -->
+            <div id="dashboardView" class="view active">
+                <div class="dashboard-container">
+                    <h2 data-i18n="dashboardTitle">Your Shmiras HaLashon Journey</h2>
+                    
+                    <!-- Dashboard Tabs -->
+                    <div class="dashboard-tabs">
+                        <button class="dashboard-tab active" data-tab="bot">🕊️ Chofetz Chaim Bot</button>
+                        <button class="dashboard-tab" data-tab="lesson">📖 A Lesson A Day</button>
+                        <button class="dashboard-tab" data-tab="prayer">🙏 Daily Prayer</button>
+                        <button class="dashboard-tab" data-tab="community">👥 Learning Together</button>
+                        <button class="dashboard-tab" data-tab="tracker">📊 Progress Tracker</button>
+                    </div>
+
+                    <!-- Bot Tab Content -->
+                    <div id="botTab" class="dashboard-tab-content active">
+                        <div class="bot-display">
+                            <img src="/chofetz_chaim.svg" alt="Chofetz Chaim" id="dashboardBotImage">
+                            <p class="bot-message">Click me to start a conversation about Shmiras HaLashon</p>
+                        </div>
+                    </div>
+
+                    <!-- Prayer Tab Content -->
+                    <div id="prayerTab" class="dashboard-tab-content">
+                        <div class="tefilah-section">
+                            <h3>🙏 <span data-i18n="tefilahAlHadibur">Tefilah Al HaDibur</span> - Prayer for Speech</h3>
+                            <p class="tefilah-intro">Recite this beautiful prayer daily to help guard your speech and strengthen your commitment to Shmiras HaLashon.</p>
+                            <div class="tefilah-card">
+                                <div class="tefilah-hebrew">
+                                    <p class="tefilah-title">תְּפִלָּה עַל הַדִּבּוּר</p>
+                                    <p>רִבּוֹנוֹ שֶׁל עוֹלָם, יְהִי רָצוֹן מִלְּפָנֶיךָ, ה' אֱלֹהַי וֵאלֹהֵי אֲבוֹתַי, שֶׁתִּשְׁמְרֵנִי הַיּוֹם וּבְכָל יוֹם מֵעַזֵּי פָנִים וּמֵעַזּוּת פָּנִים.</p>
+                                    <p>וְתַצִּילֵנִי מִלָּשׁוֹן הָרָע וּמִבַּעַל לָשׁוֹן הָרָע, וְתִשְׁמְרֵנִי מִדִּבּוּר לָשׁוֹן הָרָע, מִלְּשָׁמְעוֹ וּמִלְּקַבְּלוֹ, אֶת יִשְׂרָאֵל אַחַי, מִכָּל סִבָּה וְעִלָּה.</p>
+                                    <p>וְלֹא יֵעָלֶה עַל לְבָבִי שׂנְאַת שׁוּם אָדָם מִיִּשְׂרָאֵל. וְתַצִּילֵנִי לְעוֹלָם מִנִּגּוּעַ צָרַעַת, וְכָל שֶׁכֵּן מִנִּגְעֵי מְצוֹרָע שֶׁל לָשׁוֹן הָרָע.</p>
+                                    <p>וּתְקַדֵּשׁ פִּי לְשֵׁם קָדְשֶׁךָ, וּתְטַהֵר לִבִּי לַעֲבוֹדָתֶךָ בֶּאֱמֶת. וְתִזְכְּרֵנִי לְשׁוֹן טוֹבָה לְשַׁבֵּחַ לְהַלֵּל וּלְפָאֵר אֶת שִׁמְךָ הַקָּדוֹשׁ תָּמִיד.</p>
+                                </div>
+                                <div class="tefilah-english">
+                                    <p class="tefilah-title">Prayer for Guarding One's Speech</p>
+                                    <p><em>Master of the Universe, may it be Your will, Hashem my God and God of my fathers, that You protect me today and every day from arrogant people and from arrogance.</em></p>
+                                    <p><em>Save me from lashon hara (evil speech) and from those who speak lashon hara. Guard me from speaking, hearing, or accepting lashon hara about my fellow Jews, for any reason or cause.</em></p>
+                                    <p><em>May hatred of no person enter my heart. Protect me forever from the affliction of tzara'as (spiritual leprosy), especially from the affliction caused by lashon hara.</em></p>
+                                    <p><em>Sanctify my mouth for Your holy Name, and purify my heart to serve You in truth. Grant me a good tongue to praise, laud, and glorify Your holy Name always.</em></p>
+                                </div>
+                                <div class="tefilah-actions">
+                                    <button id="copyTefilahBtn" class="btn-secondary">📋 Copy Prayer</button>
+                                    <button id="printTefilahBtn" class="btn-secondary">🖨️ Print</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Learning Together (Community) Tab Content -->
+                    <div id="communityTab" class="dashboard-tab-content">
+                        <div class="community-section">
+                            <h3>👥 Learning Together</h3>
+                            
+                            <!-- Toggle between Community Feed and Live Chat -->
+                            <div class="learning-together-toggle">
+                                <button class="learning-mode-btn active" data-mode="feed">
+                                    📰 Community Feed
+                                </button>
+                                <button class="learning-mode-btn" data-mode="chat">
+                                    💬 Live Chat
+                                </button>
+                            </div>
+
+                            <!-- Community Feed Section -->
+                            <div id="communityFeedSection" class="learning-together-section active">
+                                <p class="community-intro">Join others in their journey of Shmiras HaLashon! See what lessons the community is learning and share your own progress.</p>
+                                
+                                <!-- Share Your Progress -->
+                                <div class="share-progress-card">
+                                <h4>📢 Share Your Latest Accomplishment</h4>
+                                <div class="share-input-container">
+                                    <textarea 
+                                        id="shareInput" 
+                                        placeholder="Share your thoughts about today's lesson or a milestone you achieved..."
+                                        rows="3"
+                                        maxlength="280"
+                                    ></textarea>
+                                    <div class="share-char-count">
+                                        <span id="charCount">0</span>/280
+                                    </div>
+                                    <button id="postShareBtn" class="btn-primary">
+                                        <span>🚀 Share with Community</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Community Feed -->
+                            <div class="community-feed">
+                                <h4>📰 Recent Updates from the Community</h4>
+                                <div class="feed-filters">
+                                    <button class="filter-btn active" data-filter="all">All Posts</button>
+                                    <button class="filter-btn" data-filter="completions">Lesson Completions</button>
+                                    <button class="filter-btn" data-filter="milestones">Milestones</button>
+                                </div>
+                                <div id="communityFeedList" class="feed-list">
+                                    <div class="loading-spinner">Loading community updates...</div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- END Community Feed Section -->
+
+                        <!-- Live Chat Section -->
+                        <div id="liveChatSection" class="learning-together-section">
+                            <div class="live-chat-container">
+                                <p class="community-intro">Connect with fellow learners in real-time! Chat, share insights, and find study partners.</p>
+                                
+                                <!-- Chat Mode Selector -->
+                                <div class="chat-mode-selector">
+                                    <button class="chat-mode-btn active" data-mode="community">
+                                        🌍 Community Room
+                                    </button>
+                                    <button class="chat-mode-btn" data-mode="private">
+                                        👤 Private Messages
+                                    </button>
+                                    <button class="chat-mode-btn" data-mode="partners">
+                                        🤝 Find Study Partner
+                                    </button>
+                                </div>
+
+                                <!-- Community Chat Room -->
+                                <div id="communityChatRoom" class="chat-room active">
+                                    <div class="chat-header">
+                                        <h4>🌍 Community Chat Room</h4>
+                                        <div class="online-count">
+                                            <span class="online-dot"></span>
+                                            <span id="onlineUsersCount">0</span> online
+                                        </div>
+                                    </div>
+                                    
+                                    <div id="communityMessages" class="chat-messages-container">
+                                        <div class="chat-welcome">
+                                            Welcome! Share insights, ask questions, and learn together. Remember: This is a space for positive, Torah-guided conversation. 🕊️
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="chat-input-container">
+                                        <input 
+                                            type="text" 
+                                            id="communityMessageInput" 
+                                            placeholder="Type your message... (Be kind, be respectful)"
+                                            maxlength="500"
+                                        />
+                                        <button id="sendCommunityMessageBtn" class="chat-send-btn">📤 Send</button>
+                                    </div>
+                                </div>
+
+                                <!-- Private Messages -->
+                                <div id="privateMessagesRoom" class="chat-room">
+                                    <div class="private-chat-layout">
+                                        <!-- Users List -->
+                                        <div class="users-sidebar">
+                                            <div class="sidebar-header">
+                                                <h4>👥 Users</h4>
+                                                <input 
+                                                    type="text" 
+                                                    id="searchUsersInput" 
+                                                    placeholder="Search users..."
+                                                    class="search-input"
+                                                />
+                                            </div>
+                                            <div id="usersList" class="users-list">
+                                                <div class="empty-state">Loading users...</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Chat Area -->
+                                        <div class="private-chat-area">
+                                            <div id="privateChatHeader" class="private-chat-header">
+                                                <div class="no-chat-selected">
+                                                    ← Select a user to start chatting
+                                                </div>
+                                            </div>
+                                            <div id="privateMessages" class="chat-messages-container">
+                                                <div class="empty-state">Select a user to view conversation</div>
+                                            </div>
+                                            <div id="privateMessageInput" class="chat-input-container" style="display: none;">
+                                                <input 
+                                                    type="text" 
+                                                    id="privateMessageTextInput" 
+                                                    placeholder="Type your message..."
+                                                    maxlength="500"
+                                                />
+                                                <button id="sendPrivateMessageBtn" class="chat-send-btn">📤 Send</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Study Partner Matching -->
+                                <div id="studyPartnersRoom" class="chat-room">
+                                    <div class="study-partners-container">
+                                        <div class="partners-header">
+                                            <h4>🤝 Find Your Study Partner (Chavrusa)</h4>
+                                            <p>Connect with someone to learn Shmiras HaLashon together!</p>
+                                        </div>
+                                        
+                                        <!-- My Profile for Matching -->
+                                        <div class="partner-profile-card">
+                                            <h5>📝 Your Study Profile</h5>
+                                            <div class="profile-form">
+                                                <label>
+                                                    Preferred Study Time:
+                                                    <select id="studyTimePreference">
+                                                        <option value="">Select time...</option>
+                                                        <option value="morning">Morning (6am-12pm)</option>
+                                                        <option value="afternoon">Afternoon (12pm-6pm)</option>
+                                                        <option value="evening">Evening (6pm-12am)</option>
+                                                        <option value="flexible">Flexible</option>
+                                                    </select>
+                                                </label>
+                                                
+                                                <label>
+                                                    Study Level:
+                                                    <select id="studyLevel">
+                                                        <option value="">Select level...</option>
+                                                        <option value="beginner">Beginner</option>
+                                                        <option value="intermediate">Intermediate</option>
+                                                        <option value="advanced">Advanced</option>
+                                                    </select>
+                                                </label>
+                                                
+                                                <label>
+                                                    Language Preference:
+                                                    <select id="languagePreference">
+                                                        <option value="english">English</option>
+                                                        <option value="hebrew">Hebrew</option>
+                                                        <option value="both">Both</option>
+                                                    </select>
+                                                </label>
+                                                
+                                                <label>
+                                                    About Me (Optional):
+                                                    <textarea 
+                                                        id="studyBio" 
+                                                        placeholder="Tell potential study partners about yourself..."
+                                                        maxlength="200"
+                                                        rows="3"
+                                                    ></textarea>
+                                                </label>
+                                                
+                                                <button id="saveStudyProfileBtn" class="btn-primary">💾 Save Profile</button>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Available Study Partners -->
+                                        <div class="available-partners">
+                                            <h5>🔍 Available Study Partners</h5>
+                                            <div id="partnersList" class="partners-grid">
+                                                <div class="empty-state">Save your profile to see potential study partners!</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- END Live Chat Section -->
+
+                        </div>
+                    </div>
+
+                    <!-- A Lesson A Day Tab Content -->
+                    <div id="lessonTab" class="dashboard-tab-content">
+                        <div class="daily-learning-section">
+                            <h3>📖 A Lesson A Day - Shmiras HaLashon</h3>
+                            <p class="lesson-intro">Learn the daily lessons from "A Lesson A Day" by the Chofetz Chaim Heritage Foundation. Each day includes practical halachos and inspiring insights to help you guard your speech.</p>
+                            
+                            <div class="daily-lesson-card">
+                                <div class="lesson-header">
+                                    <button id="prevDayBtn" class="nav-btn">◀ Previous</button>
+                                    <h4 id="lessonDay">Day 1</h4>
+                                    <button id="nextDayBtn" class="nav-btn">Next ▶</button>
+                                </div>
+                                <div id="lessonContent" class="lesson-content">
+                                    <!-- Lesson content will be loaded here -->
+                                </div>
+                                <div class="lesson-footer">
+                                    <p style="font-size: 0.85em; color: #666; text-align: center; margin-top: 20px;">
+                                        <em>A project of Mesorah Publications - Chofetz Chaim Heritage Foundation</em>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                        </div>
+                    </div>
+
+                    <!-- Tracker Tab Content -->
+                    <div id="trackerTab" class="dashboard-tab-content">
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">🔥</div>
+                            <div class="stat-value" id="streakDays">0</div>
+                            <div class="stat-label" data-i18n="dayStreak">Day Streak</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">💬</div>
+                            <div class="stat-value" id="totalChats">0</div>
+                            <div class="stat-label" data-i18n="conversations">Conversations</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📚</div>
+                            <div class="stat-value" id="lessonsLearned">0</div>
+                            <div class="stat-label" data-i18n="lessonsLearned">Lessons Learned</div>
+                        </div>
+                    </div>
+
+                    <!-- Completed Lessons -->
+                    <div class="completed-lessons-section">
+                        <h3>✅ Completed Lessons</h3>
+                        <div id="completedLessonsList" class="completed-lessons-grid">
+                            <p class="empty-state">Complete lessons to see them here!</p>
+                        </div>
+                    </div>
+
+                    <!-- Milestones -->
+                    <div class="milestones-section">
+                        <h3>🏆 <span data-i18n="milestones">Milestones</span></h3>
+                        <div id="milestonesList" class="milestones-grid">
+                            <p class="empty-state">Keep learning to unlock milestones!</p>
+                        </div>
+                    </div>
+
+                    <!-- Learning Log -->
+                    <div class="learning-log-section">
+                        <h3>📝 <span data-i18n="learningLog">Learning Log</span></h3>
+                        <div class="log-input-container">
+                            <textarea 
+                                id="logInput" 
+                                placeholder="What did you learn today about Shmiras HaLashon? (e.g., 'Learned about the importance of judging favorably - Chofetz Chaim Chapter 3')"
+                                rows="3"
+                            ></textarea>
+                            <button id="addLogBtn" class="btn-primary">
+                                <span>📝 Add Log Entry</span>
+                            </button>
+                        </div>
+                        <div id="learningLogList" class="log-entries">
+                            <p class="empty-state">Your learning entries will appear here</p>
+                        </div>
+                    </div>
+
+                    <!-- Topics Discussed -->
+                    <div class="topics-section">
+                        <h3>📖 <span data-i18n="topicsDiscussed">Topics Discussed</span></h3>
+                        <div id="topicsList" class="topics-cloud">
+                            <p class="empty-state">Topics will appear as you chat</p>
+                        </div>
+                    </div>
+
+                    <!-- Share Progress -->
+                    <div class="share-section">
+                        <h3>🤝 <span data-i18n="shareProgress">Share My Progress</span></h3>
+                        <div class="share-buttons">
+                            <button id="shareTwitterBtn" class="btn-share twitter">🐦 Twitter</button>
+                            <button id="shareWhatsAppBtn" class="btn-share whatsapp">💬 WhatsApp</button>
+                            <button id="copyLinkBtn" class="btn-share copy">📋 <span data-i18n="copyLink">Copy Link</span></button>
+                            <button id="exportDataBtn" class="btn-share export">📥 <span data-i18n="exportData">Export Data</span></button>
+                        </div>
+                    </div>
+
+                    <div class="recent-conversations">
+                        <h3 data-i18n="recentConversations">Recent Conversations</h3>
+                        <div id="conversationsList" class="conversations-list">
+                            <p class="empty-state" data-i18n="emptyState">Your conversations will appear here</p>
+                        </div>
+                    </div>
+                    </div>
+                    <!-- End Tracker Tab -->
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Floating bot removed - bot is now in dashboard tab -->
+
+    <script type="module" src="/translations.js"></script>
+    <script type="module" src="/progress-tracker.js"></script>
+    <script type="module" src="/firebase-config.js"></script>
+    <script type="module" src="/daily-lessons.js"></script>
+    <script type="module" src="/app.js"></script>
+</body>
+</html>
+
