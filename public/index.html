@@ -2,16 +2,19 @@
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Chofetz Chaim - Shmiras HaLashon App</title>
-    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/styles.css?v=4.0">
 </head>
 <body>
     <!-- Login/Signup Modal -->
     <div id="authModal" class="modal">
         <div class="modal-content">
             <div class="auth-header">
-                <img src="/mysticminded-logo.png" alt="MysticMinded Logo" class="logo-image">
+                <img src="/mysticminded-logo-new.svg" alt="MysticMinded Logo" class="logo-image">
                 <h1 data-i18n="appTitle">🕊️ Chofetz Chaim</h1>
                 <p class="dedication" data-i18n="dedication">In honor of my Brother Yosef Yisroel Meyer named after the Chofetz Chaim for being such a role model on giving the benefit of the doubt and avoiding negative speech or judgement on others as well as my best friend Dr. Sima Bracha Shulman for being the greatest best friend a girl could have and for lending me her Shmiras halashon a lesson a day set with which I started to learn daily lessons and quickly found it so helpful in my daily growth and so life changing! May every lesson learned be in their righteous merit and in their zechus and may all their tefilot be answered amen!</p>
                 <p class="subtitle" data-i18n="subtitle">Your Guide to Shmiras HaLashon</p>
@@ -77,7 +80,7 @@
         <header class="app-header">
             <div class="header-content">
                 <div class="logo">
-                    <img src="/mysticminded-logo.png" alt="MysticMinded Logo" class="header-logo">
+                    <img src="/mysticminded-logo-new.svg" alt="MysticMinded Logo" class="header-logo">
                     <h1 data-i18n="appTitle">🕊️ Chofetz Chaim</h1>
                 </div>
                 <div class="header-right">
@@ -146,6 +149,28 @@
                         </div>
                     </div>
                     
+                    <!-- Voice Recording Panel -->
+                    <div id="voiceRecordingPanel" class="voice-recording-panel" style="display: none;">
+                        <div class="voice-recording-header">
+                            <div class="recording-indicator">
+                                <span class="recording-dot"></span>
+                                <span>Recording...</span>
+                            </div>
+                            <button type="button" id="cancelRecording" class="cancel-recording-btn">✕</button>
+                        </div>
+                        <div class="transcription-display" id="transcriptionDisplay">
+                            <p class="transcription-text" id="transcriptionText">Speak now...</p>
+                        </div>
+                        <div class="voice-recording-actions">
+                            <button type="button" id="stopRecording" class="stop-recording-btn">
+                                ⏹️ Stop
+                            </button>
+                            <button type="button" id="sendTranscription" class="send-transcription-btn" disabled>
+                                📤 Send
+                            </button>
+                        </div>
+                    </div>
+                    
                     <div class="chat-input-container">
                         <form id="chatForm">
                             <button type="button" id="voiceBtn" class="voice-btn" title="Record your question">
@@ -175,6 +200,7 @@
                     <div class="dashboard-tabs">
                         <button class="dashboard-tab active" data-tab="bot">🕊️ Chofetz Chaim Bot</button>
                         <button class="dashboard-tab" data-tab="lesson">📖 A Lesson A Day</button>
+                        <button class="dashboard-tab" data-tab="chizuk">� Chizuk</button>
                         <button class="dashboard-tab" data-tab="prayer">🙏 Daily Prayer</button>
                         <button class="dashboard-tab" data-tab="community">👥 Learning Together</button>
                         <button class="dashboard-tab" data-tab="tracker">📊 Progress Tracker</button>
@@ -279,11 +305,8 @@
                                     <button class="chat-mode-btn active" data-mode="community">
                                         🌍 Community Room
                                     </button>
-                                    <button class="chat-mode-btn" data-mode="private">
-                                        👤 Private Messages
-                                    </button>
                                     <button class="chat-mode-btn" data-mode="partners">
-                                        🤝 Find Study Partner
+                                        🤝 Study Partners
                                     </button>
                                 </div>
 
@@ -314,109 +337,245 @@
                                     </div>
                                 </div>
 
-                                <!-- Private Messages -->
-                                <div id="privateMessagesRoom" class="chat-room">
-                                    <div class="private-chat-layout">
-                                        <!-- Users List -->
-                                        <div class="users-sidebar">
-                                            <div class="sidebar-header">
-                                                <h4>👥 Users</h4>
-                                                <input 
-                                                    type="text" 
-                                                    id="searchUsersInput" 
-                                                    placeholder="Search users..."
-                                                    class="search-input"
-                                                />
-                                            </div>
-                                            <div id="usersList" class="users-list">
-                                                <div class="empty-state">Loading users...</div>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Chat Area -->
-                                        <div class="private-chat-area">
-                                            <div id="privateChatHeader" class="private-chat-header">
-                                                <div class="no-chat-selected">
-                                                    ← Select a user to start chatting
-                                                </div>
-                                            </div>
-                                            <div id="privateMessages" class="chat-messages-container">
-                                                <div class="empty-state">Select a user to view conversation</div>
-                                            </div>
-                                            <div id="privateMessageInput" class="chat-input-container" style="display: none;">
-                                                <input 
-                                                    type="text" 
-                                                    id="privateMessageTextInput" 
-                                                    placeholder="Type your message..."
-                                                    maxlength="500"
-                                                />
-                                                <button id="sendPrivateMessageBtn" class="chat-send-btn">📤 Send</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
                                 <!-- Study Partner Matching -->
                                 <div id="studyPartnersRoom" class="chat-room">
                                     <div class="study-partners-container">
                                         <div class="partners-header">
-                                            <h4>🤝 Find Your Study Partner (Chavrusa)</h4>
-                                            <p>Connect with someone to learn Shmiras HaLashon together!</p>
+                                            <h4>🤝 Your Study Partners (Chavrusa)</h4>
+                                            <p>Find partners, chat with them, and learn together via video!</p>
                                         </div>
-                                        
-                                        <!-- My Profile for Matching -->
-                                        <div class="partner-profile-card">
-                                            <h5>📝 Your Study Profile</h5>
-                                            <div class="profile-form">
-                                                <label>
-                                                    Preferred Study Time:
-                                                    <select id="studyTimePreference">
-                                                        <option value="">Select time...</option>
-                                                        <option value="morning">Morning (6am-12pm)</option>
-                                                        <option value="afternoon">Afternoon (12pm-6pm)</option>
-                                                        <option value="evening">Evening (6pm-12am)</option>
-                                                        <option value="flexible">Flexible</option>
-                                                    </select>
-                                                </label>
-                                                
-                                                <label>
-                                                    Study Level:
-                                                    <select id="studyLevel">
-                                                        <option value="">Select level...</option>
-                                                        <option value="beginner">Beginner</option>
-                                                        <option value="intermediate">Intermediate</option>
-                                                        <option value="advanced">Advanced</option>
-                                                    </select>
-                                                </label>
-                                                
-                                                <label>
-                                                    Language Preference:
-                                                    <select id="languagePreference">
-                                                        <option value="english">English</option>
-                                                        <option value="hebrew">Hebrew</option>
-                                                        <option value="both">Both</option>
-                                                    </select>
-                                                </label>
-                                                
-                                                <label>
-                                                    About Me (Optional):
-                                                    <textarea 
-                                                        id="studyBio" 
-                                                        placeholder="Tell potential study partners about yourself..."
-                                                        maxlength="200"
-                                                        rows="3"
-                                                    ></textarea>
-                                                </label>
-                                                
-                                                <button id="saveStudyProfileBtn" class="btn-primary">💾 Save Profile</button>
+
+                                        <!-- Study Mode Toggle -->
+                                        <div class="study-mode-toggle">
+                                            <button class="study-mode-btn active" data-study-mode="profile">
+                                                📝 Find Partners
+                                            </button>
+                                            <button class="study-mode-btn" data-study-mode="chat">
+                                                💬 Chat with Partner
+                                            </button>
+                                            <button class="study-mode-btn" data-study-mode="video">
+                                                📹 Video Sessions
+                                            </button>
+                                        </div>
+
+                                        <!-- Profile & Text-based Matching Section -->
+                                        <div id="profileMatchingSection" class="study-mode-section active">
+                                            <!-- My Profile for Matching -->
+                                            <div class="partner-profile-card">
+                                                <h5>📝 Your Study Profile</h5>
+                                                <div class="profile-form">
+                                                    <label>
+                                                        Preferred Study Time:
+                                                        <select id="studyTimePreference">
+                                                            <option value="">Select time...</option>
+                                                            <option value="morning">Morning (6am-12pm)</option>
+                                                            <option value="afternoon">Afternoon (12pm-6pm)</option>
+                                                            <option value="evening">Evening (6pm-12am)</option>
+                                                            <option value="flexible">Flexible</option>
+                                                        </select>
+                                                    </label>
+                                                    
+                                                    <label>
+                                                        Study Level:
+                                                        <select id="studyLevel">
+                                                            <option value="">Select level...</option>
+                                                            <option value="beginner">Beginner</option>
+                                                            <option value="intermediate">Intermediate</option>
+                                                            <option value="advanced">Advanced</option>
+                                                        </select>
+                                                    </label>
+                                                    
+                                                    <label>
+                                                        Language Preference:
+                                                        <select id="languagePreference">
+                                                            <option value="english">English</option>
+                                                            <option value="hebrew">Hebrew</option>
+                                                            <option value="both">Both</option>
+                                                        </select>
+                                                    </label>
+                                                    
+                                                    <label>
+                                                        About Me (Optional):
+                                                        <textarea 
+                                                            id="studyBio" 
+                                                            placeholder="Tell potential study partners about yourself..."
+                                                            maxlength="200"
+                                                            rows="3"
+                                                        ></textarea>
+                                                    </label>
+                                                    
+                                                    <button id="saveStudyProfileBtn" class="btn-primary">💾 Save Profile</button>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Available Study Partners -->
+                                            <div class="available-partners">
+                                                <h5>🔍 Available Study Partners</h5>
+                                                <div id="partnersList" class="partners-grid">
+                                                    <div class="empty-state">Save your profile to see potential study partners!</div>
+                                                </div>
                                             </div>
                                         </div>
-                                        
-                                        <!-- Available Study Partners -->
-                                        <div class="available-partners">
-                                            <h5>🔍 Available Study Partners</h5>
-                                            <div id="partnersList" class="partners-grid">
-                                                <div class="empty-state">Save your profile to see potential study partners!</div>
+
+                                        <!-- Private Chat Section -->
+                                        <div id="privateChatSection" class="study-mode-section">
+                                            <div class="private-chat-layout">
+                                                <!-- Users List -->
+                                                <div class="users-sidebar">
+                                                    <div class="sidebar-header">
+                                                        <h4>👥 Your Partners</h4>
+                                                        <input 
+                                                            type="text" 
+                                                            id="searchUsersInput" 
+                                                            placeholder="Search partners..."
+                                                            class="search-input"
+                                                        />
+                                                    </div>
+                                                    <div id="usersList" class="users-list">
+                                                        <div class="empty-state">Loading users...</div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Chat Area -->
+                                                <div class="private-chat-area">
+                                                    <div id="privateChatHeader" class="private-chat-header">
+                                                        <div class="no-chat-selected">
+                                                            ← Select a study partner to start chatting
+                                                        </div>
+                                                    </div>
+                                                    <div id="privateMessages" class="chat-messages-container">
+                                                        <div class="empty-state">Select a partner to view conversation</div>
+                                                    </div>
+                                                    <div id="privateMessageInput" class="chat-input-container" style="display: none;">
+                                                        <input 
+                                                            type="text" 
+                                                            id="privateMessageTextInput" 
+                                                            placeholder="Type your message..."
+                                                            maxlength="500"
+                                                        />
+                                                        <button id="sendPrivateMessageBtn" class="chat-send-btn">📤 Send</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Live Video Sessions Section -->
+                                        <div id="videoSessionsSection" class="study-mode-section">
+                                            <div class="livestream-container">
+                                        <div class="livestream-header">
+                                            <h4>📺 Live Video Learning</h4>
+                                            <p>Learn together face-to-face! Join or host a live study session.</p>
+                                        </div>
+
+                                        <!-- Video Controls -->
+                                        <div class="video-controls-bar">
+                                            <button id="startVideoBtn" class="video-control-btn primary">
+                                                📹 Start Video Session
+                                            </button>
+                                            <button id="joinVideoBtn" class="video-control-btn">
+                                                🚪 Join Existing Session
+                                            </button>
+                                            <div class="session-status">
+                                                <span class="status-dot"></span>
+                                                <span id="sessionStatus">Not Connected</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Active Sessions List -->
+                                        <div id="activeSessionsPanel" class="active-sessions-panel">
+                                            <h5>🔴 Active Study Sessions</h5>
+                                            <div id="activeSessionsList" class="sessions-list">
+                                                <div class="empty-state">No active sessions. Be the first to start one!</div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Video Grid -->
+                                        <div id="videoGrid" class="video-grid hidden">
+                                            <div class="video-main-container">
+                                                <video id="localVideo" autoplay muted playsinline></video>
+                                                <div class="video-label local">You</div>
+                                                <div class="video-overlay">
+                                                    <button id="toggleMicBtn" class="overlay-btn">
+                                                        🎤 <span>Mute</span>
+                                                    </button>
+                                                    <button id="toggleVideoBtn" class="overlay-btn">
+                                                        📹 <span>Stop Video</span>
+                                                    </button>
+                                                    <button id="shareScreenBtn" class="overlay-btn">
+                                                        🖥️ <span>Share Screen</span>
+                                                    </button>
+                                                    <button id="leaveCallBtn" class="overlay-btn danger">
+                                                        📞 <span>Leave</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div id="remoteVideosContainer" class="remote-videos-container">
+                                                <!-- Remote participant videos will be added here -->
+                                            </div>
+                                        </div>
+
+                                        <!-- Session Info Panel -->
+                                        <div id="sessionInfoPanel" class="session-info-panel hidden">
+                                            <div class="session-info-content">
+                                                <h5>Current Session</h5>
+                                                <div class="session-details">
+                                                    <p><strong>Host:</strong> <span id="sessionHost">-</span></p>
+                                                    <p><strong>Topic:</strong> <span id="sessionTopic">-</span></p>
+                                                    <p><strong>Participants:</strong> <span id="participantCount">0</span></p>
+                                                    <p><strong>Duration:</strong> <span id="sessionDuration">00:00</span></p>
+                                                </div>
+                                                <div class="session-chat">
+                                                    <h6>💬 Session Chat</h6>
+                                                    <div id="sessionChatMessages" class="session-chat-messages"></div>
+                                                    <div class="session-chat-input">
+                                                        <input type="text" id="sessionChatInput" placeholder="Message participants...">
+                                                        <button id="sendSessionChatBtn">📤</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Create Session Modal -->
+                                        <div id="createSessionModal" class="video-modal hidden">
+                                            <div class="video-modal-content">
+                                                <h4>Start a New Study Session</h4>
+                                                <form id="createSessionForm">
+                                                    <label>
+                                                        Session Topic:
+                                                        <input type="text" id="sessionTopicInput" placeholder="e.g., Daily Lesson Day 15" required>
+                                                    </label>
+                                                    <label>
+                                                        Max Participants:
+                                                        <select id="maxParticipants">
+                                                            <option value="2">2 (One-on-One)</option>
+                                                            <option value="4" selected>4 (Small Group)</option>
+                                                            <option value="8">8 (Medium Group)</option>
+                                                            <option value="12">12 (Large Group)</option>
+                                                        </select>
+                                                    </label>
+                                                    <label>
+                                                        <input type="checkbox" id="requireApproval">
+                                                        Require approval to join
+                                                    </label>
+                                                    <div class="modal-buttons">
+                                                        <button type="submit" class="btn-primary">🚀 Start Session</button>
+                                                        <button type="button" id="cancelSessionBtn" class="btn-secondary">Cancel</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+
+                                        <!-- Guidelines -->
+                                        <div class="video-guidelines">
+                                            <h6>📋 Video Learning Guidelines</h6>
+                                            <ul>
+                                                <li>✓ Keep video sessions focused on Torah learning</li>
+                                                <li>✓ Dress modestly (tzniut) as per halacha</li>
+                                                <li>✓ Maintain appropriate boundaries (men with men, women with women)</li>
+                                                <li>✓ Be respectful and follow Shmiras HaLashon principles</li>
+                                                <li>✓ Sessions are private and not recorded</li>
+                                            </ul>
+                                        </div>
                                             </div>
                                         </div>
                                     </div>
@@ -451,6 +610,93 @@
                             </div>
                         </div>
                     </div>
+                        </div>
+                    </div>
+
+                    <!-- Chizuk Tab Content -->
+                    <div id="chizukTab" class="dashboard-tab-content">
+                        <div class="chizuk-section">
+                            <div class="chizuk-header">
+                                <h3>💪 Chizuk - Inspiration & Shiurim</h3>
+                                <p class="chizuk-intro">Watch inspiring shiurim on Shmiras HaLashon from great Torah teachers. Share videos that strengthen you!</p>
+                            </div>
+
+                            <!-- Add Video Form -->
+                            <div class="add-video-card">
+                                <h4>📤 Share a Shiur</h4>
+                                <form id="addVideoForm" class="add-video-form">
+                                    <div class="form-row">
+                                        <input 
+                                            type="text" 
+                                            id="videoUrl" 
+                                            placeholder="YouTube video URL (e.g., https://youtube.com/watch?v=...)"
+                                            required
+                                        />
+                                    </div>
+                                    <div class="form-row">
+                                        <input 
+                                            type="text" 
+                                            id="videoTitle" 
+                                            placeholder="Title (e.g., Rabbi's Name - Topic)"
+                                            required
+                                        />
+                                    </div>
+                                    <div class="form-row">
+                                        <textarea 
+                                            id="videoDescription" 
+                                            placeholder="Description (optional) - What's special about this shiur?"
+                                            rows="2"
+                                            maxlength="200"
+                                        ></textarea>
+                                    </div>
+                                    <div class="form-row">
+                                        <select id="videoCategory">
+                                            <option value="">Select Category...</option>
+                                            <option value="general">General Shmiras HaLashon</option>
+                                            <option value="laws">Laws & Halachos</option>
+                                            <option value="stories">Stories & Inspiration</option>
+                                            <option value="mussar">Mussar & Character Development</option>
+                                            <option value="chofetz-chaim">About the Chofetz Chaim</option>
+                                            <option value="practical">Practical Applications</option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="btn-primary">
+                                        ➕ Add Shiur
+                                    </button>
+                                </form>
+                            </div>
+
+                            <!-- Filter & Sort -->
+                            <div class="video-filters">
+                                <div class="filter-group">
+                                    <label>Category:</label>
+                                    <select id="filterCategory" class="filter-select">
+                                        <option value="all">All Categories</option>
+                                        <option value="general">General</option>
+                                        <option value="laws">Laws & Halachos</option>
+                                        <option value="stories">Stories & Inspiration</option>
+                                        <option value="mussar">Mussar</option>
+                                        <option value="chofetz-chaim">Chofetz Chaim</option>
+                                        <option value="practical">Practical</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>Sort by:</label>
+                                    <select id="sortVideos" class="filter-select">
+                                        <option value="recent">Most Recent</option>
+                                        <option value="popular">Most Popular</option>
+                                        <option value="title">Title A-Z</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Videos Grid -->
+                            <div id="videosGrid" class="videos-grid">
+                                <div class="empty-state">
+                                    <p>No shiurim yet. Be the first to share!</p>
+                                    <p>💡 Add inspiring videos about Shmiras HaLashon</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -548,6 +794,8 @@
     <script type="module" src="/progress-tracker.js"></script>
     <script type="module" src="/firebase-config.js"></script>
     <script type="module" src="/daily-lessons.js"></script>
+    <script type="module" src="/video-streaming.js"></script>
+    <script type="module" src="/chizuk-videos.js"></script>
     <script type="module" src="/app.js"></script>
 </body>
 </html>

@@ -1,6 +1,8 @@
 import { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, collection, addDoc, getDocs, query, where, orderBy, serverTimestamp, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, limit } from './firebase-config.js';
 import { initDailyLessons } from './daily-lessons.js';
 import { switchLanguage, updateUILanguage, currentLanguage } from './translations.js';
+import { initVideoStreaming } from './video-streaming.js';
+import { initChizukVideos } from './chizuk-videos.js';
 
 // State management
 let currentUser = null;
@@ -18,6 +20,11 @@ const chatForm = document.getElementById('chatForm');
 const messageInput = document.getElementById('messageInput');
 const sendBtn = document.getElementById('sendBtn');
 const voiceBtn = document.getElementById('voiceBtn');
+const voiceRecordingPanel = document.getElementById('voiceRecordingPanel');
+const transcriptionText = document.getElementById('transcriptionText');
+const stopRecordingBtn = document.getElementById('stopRecording');
+const sendTranscriptionBtn = document.getElementById('sendTranscription');
+const cancelRecordingBtn = document.getElementById('cancelRecording');
 const dailyMessage = document.getElementById('dailyMessage');
 const userName = document.getElementById('userName');
 const userDropdown = document.getElementById('userDropdown');
@@ -27,9 +34,17 @@ const dashboardView = document.getElementById('dashboardView');
 // Voice recognition
 let recognition = null;
 let isRecording = false;
+let currentTranscript = '';
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 App initializing...');
+    console.log('✅ Auth:', auth);
+    console.log('✅ DB:', db);
+    console.log('✅ Login form element:', loginForm);
+    console.log('✅ Signup form element:', signupForm);
+    console.log('✅ Voice button element:', voiceBtn);
+    
     // Initialize language
     updateUILanguage();
     updateLanguageButtons();
@@ -37,9 +52,11 @@ document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
     loadDailyEncouragement();
     initDailyLessons();
+    initVoiceRecognition();
     
     // Listen for auth state changes
     onAuthStateChanged(auth, (user) => {
+        console.log('🔐 Auth state changed:', user ? user.email : 'No user');
         if (user) {
             currentUser = {
                 id: user.uid,
@@ -85,17 +102,24 @@ function setupEventListeners() {
     // Login form
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        console.log('📝 Login form submitted');
         const email = document.getElementById('loginEmail').value;
         const password = document.getElementById('loginPassword').value;
+        console.log('Email:', email);
+        console.log('Password length:', password.length);
         await login(email, password);
     });
 
     // Signup form
     signupForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        console.log('📝 Signup form submitted');
         const name = document.getElementById('signupName').value;
         const email = document.getElementById('signupEmail').value;
         const password = document.getElementById('signupPassword').value;
+        console.log('Name:', name);
+        console.log('Email:', email);
+        console.log('Password length:', password.length);
         await signup(name, email, password);
     });
 
@@ -111,6 +135,11 @@ function setupEventListeners() {
 
     // Voice recording button
     voiceBtn.addEventListener('click', toggleVoiceRecording);
+    
+    // Voice recording controls
+    stopRecordingBtn.addEventListener('click', stopRecording);
+    sendTranscriptionBtn.addEventListener('click', sendTranscription);
+    cancelRecordingBtn.addEventListener('click', cancelRecording);
 
     // Quick questions
     document.querySelectorAll('.quick-q').forEach(btn => {
@@ -269,12 +298,37 @@ function setupLiveChatListeners() {
             if (mode === 'community') {
                 document.getElementById('communityChatRoom').classList.add('active');
                 loadCommunityChat();
-            } else if (mode === 'private') {
-                document.getElementById('privateMessagesRoom').classList.add('active');
-                loadPrivateMessages();
             } else if (mode === 'partners') {
                 document.getElementById('studyPartnersRoom').classList.add('active');
                 loadStudyPartners();
+                // Initialize video streaming when study partners section is opened
+                if (typeof initVideoStreaming === 'function') {
+                    initVideoStreaming(currentUser);
+                }
+            }
+        });
+    });
+
+    // Study mode toggle (Profile vs Chat vs Video)
+    document.querySelectorAll('.study-mode-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.study-mode-btn').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            
+            document.querySelectorAll('.study-mode-section').forEach(section => section.classList.remove('active'));
+            
+            const studyMode = e.target.dataset.studyMode;
+            if (studyMode === 'profile') {
+                document.getElementById('profileMatchingSection').classList.add('active');
+            } else if (studyMode === 'chat') {
+                document.getElementById('privateChatSection').classList.add('active');
+                loadPrivateMessages();
+            } else if (studyMode === 'video') {
+                document.getElementById('videoSessionsSection').classList.add('active');
+                // Initialize video streaming when video tab is selected
+                if (typeof initVideoStreaming === 'function') {
+                    initVideoStreaming(currentUser);
+                }
             }
         });
     });
@@ -727,11 +781,15 @@ function switchAuthTab(tab) {
 
 // Auth functions (Firebase)
 async function login(email, password) {
+    console.log('Login attempt:', email);
     try {
         await signInWithEmailAndPassword(auth, email, password);
+        console.log('Login successful');
         // onAuthStateChanged will handle showing the app
     } catch (error) {
         console.error('Login error:', error);
+        console.error('Error code:', error.code);
+        console.error('Error message:', error.message);
         showError(error.message || 'Login failed. Please check your credentials.');
     }
 }
@@ -992,6 +1050,11 @@ function switchDashboardTab(tabName) {
             chatSection.classList.remove('active');
         }
     }
+    
+    // Initialize Chizuk videos when tab is opened
+    if (tabName === 'chizuk') {
+        initChizukVideos(currentUser);
+    }
 }
 
 function loadUserData() {
@@ -1121,43 +1184,77 @@ function initVoiceRecognition() {
     
     if (!SpeechRecognition) {
         console.warn('Speech recognition not supported in this browser');
-        voiceBtn.style.display = 'none';
+        voiceBtn.title = 'Voice recording not supported in this browser. Please use Chrome, Safari, or Edge.';
+        voiceBtn.style.opacity = '0.5';
+        voiceBtn.style.cursor = 'not-allowed';
+        voiceBtn.onclick = () => {
+            alert('Voice recording is not supported in Firefox. Please use Chrome, Safari, or Edge for voice input.');
+        };
         return;
     }
     
+    // Show the button since speech recognition is supported
+    voiceBtn.style.display = 'inline-flex';
+    voiceBtn.style.opacity = '1';
+    
     recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.lang = 'en-US';
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = currentLanguage === 'he' ? 'he-IL' : 'en-US';
     
     recognition.onstart = () => {
         isRecording = true;
-        voiceBtn.classList.add('recording');
-        voiceBtn.innerHTML = '<span class="voice-icon recording-pulse">🔴</span>';
-        messageInput.placeholder = 'Listening...';
+        currentTranscript = '';
+        voiceRecordingPanel.style.display = 'block';
+        transcriptionText.textContent = 'Speak now...';
+        sendTranscriptionBtn.disabled = true;
     };
     
     recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        messageInput.value = transcript;
-        messageInput.focus();
+        let interimTranscript = '';
+        let finalTranscript = '';
+        
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+                finalTranscript += transcript + ' ';
+            } else {
+                interimTranscript += transcript;
+            }
+        }
+        
+        currentTranscript = (finalTranscript + interimTranscript).trim();
+        
+        if (currentTranscript) {
+            transcriptionText.textContent = currentTranscript;
+            sendTranscriptionBtn.disabled = false;
+        } else {
+            transcriptionText.textContent = 'Speak now...';
+            sendTranscriptionBtn.disabled = true;
+        }
     };
     
     recognition.onerror = (event) => {
         console.error('Speech recognition error:', event.error);
-        resetVoiceButton();
         if (event.error === 'no-speech') {
-            messageInput.placeholder = 'No speech detected. Try again...';
+            transcriptionText.textContent = 'No speech detected. Try speaking again...';
+        } else if (event.error === 'not-allowed') {
+            alert('Microphone access denied. Please allow microphone access in your browser settings.');
+            cancelRecording();
         } else {
-            messageInput.placeholder = 'Error recording. Please try again...';
+            transcriptionText.textContent = 'Error: ' + event.error + '. Please try again...';
         }
-        setTimeout(() => {
-            messageInput.placeholder = 'Ask about Shmiras HaLashon...';
-        }, 2000);
     };
     
     recognition.onend = () => {
-        resetVoiceButton();
+        if (isRecording) {
+            // If still in recording mode, restart
+            try {
+                recognition.start();
+            } catch (e) {
+                console.log('Recognition restart prevented:', e);
+            }
+        }
     };
 }
 
@@ -1167,15 +1264,43 @@ function toggleVoiceRecording() {
     }
     
     if (!recognition) {
-        alert('Voice recording is not supported in your browser. Please type your question instead.');
         return;
     }
     
     if (isRecording) {
-        recognition.stop();
+        stopRecording();
     } else {
-        recognition.start();
+        try {
+            recognition.start();
+        } catch (e) {
+            console.error('Failed to start recognition:', e);
+            alert('Could not start voice recording. Please try again.');
+        }
     }
+}
+
+function stopRecording() {
+    if (recognition && isRecording) {
+        isRecording = false;
+        recognition.stop();
+    }
+}
+
+function sendTranscription() {
+    if (currentTranscript) {
+        messageInput.value = currentTranscript;
+        cancelRecording();
+        // Trigger form submission
+        chatForm.dispatchEvent(new Event('submit'));
+    }
+}
+
+function cancelRecording() {
+    stopRecording();
+    voiceRecordingPanel.style.display = 'none';
+    currentTranscript = '';
+    transcriptionText.textContent = 'Speak now...';
+    sendTranscriptionBtn.disabled = true;
 }
 
 function resetVoiceButton() {
@@ -1236,18 +1361,185 @@ function loadCommunityChat() {
     updateOnlineCount();
 }
 
+// Enhanced Lashon Hara screening function
+function screenForLashonHara(message) {
+    const lashonHaraKeywords = [
+        // Negative speech patterns - English
+        'hate', 'stupid', 'idiot', 'dumb', 'loser', 'ugly', 'worthless', 'useless',
+        'pathetic', 'disgusting', 'terrible person', 'horrible person', 'awful person', 
+        'nasty', 'gross', 'fake', 'liar', 'evil', 'wicked', 'bad person',
+        
+        // Gossip indicators
+        'did you hear', 'i heard that', 'rumor', 'apparently', 'they say',
+        'someone told me', 'word on the street', 'between you and me',
+        'don\'t tell anyone', 'keep this secret', 'guess what i heard',
+        
+        // Judgmental language
+        'always fails', 'never succeeds', 'so bad at', 'worst', 'failure',
+        'can\'t do anything', 'terrible at', 'incompetent', 'hopeless',
+        
+        // Insults
+        'moron', 'fool', 'jerk', 'creep', 'scum', 'trash', 'garbage',
+        'waste of', 'pathetic excuse', 'embarrassment', 'shame',
+        
+        // Mockery and belittling
+        'what a joke', 'ridiculous', 'laughable', 'embarrassing',
+        'makes fun of', 'mocking', 'laughing at',
+        
+        // Profanity placeholders
+        'damn', 'hell', 'crap', 'suck', 'sucks',
+        
+        // Hebrew negative terms (common lashon hara words)
+        'שונא', 'טיפש', 'מטומטם', 'גרוע', 'נורא', 'גרוע ביותר',
+        'לא טוב', 'רע', 'רשע', 'שקרן', 'מזויף'
+    ];
+    
+    const suspiciousPatterns = [
+        // Patterns that often indicate gossip or negative speech
+        /\b(he|she|they)\s+(is|are)\s+(so|such)\s+\w+/i,  // "she is so..."
+        /\bcan't believe\s+(he|she|they)/i,  // "can't believe he..."
+        /\bdid\s+you\s+(see|hear)\s+about/i,  // "did you hear about..."
+        /\bi\s+hate\s+(him|her|them)/i,  // "I hate him/her/them"
+        /\bwhat\s+a\s+(loser|idiot|fool)/i,  // "what a loser"
+    ];
+    
+    const messageLower = message.toLowerCase();
+    const messageNormalized = message.trim();
+    
+    // Check for keywords
+    for (const keyword of lashonHaraKeywords) {
+        if (messageLower.includes(keyword.toLowerCase())) {
+            return {
+                isProblematic: true,
+                reason: 'negative_speech',
+                keyword: keyword
+            };
+        }
+    }
+    
+    // Check for suspicious patterns
+    for (const pattern of suspiciousPatterns) {
+        if (pattern.test(message)) {
+            return {
+                isProblematic: true,
+                reason: 'gossip_pattern',
+                pattern: pattern.source
+            };
+        }
+    }
+    
+    // Check for excessive caps (shouting/aggression)
+    const capsRatio = (message.match(/[A-Z]/g) || []).length / message.length;
+    if (capsRatio > 0.6 && message.length > 10) {
+        return {
+            isProblematic: true,
+            reason: 'aggressive_tone'
+        };
+    }
+    
+    // Check for multiple exclamation/question marks (aggressive tone)
+    if (message.match(/[!?]{3,}/)) {
+        return {
+            isProblematic: true,
+            reason: 'aggressive_punctuation'
+        };
+    }
+    
+    // Check for excessive negative emoji
+    const negativeEmoji = ['😠', '😡', '🤬', '😤', '💢', '👎', '🖕'];
+    const emojiCount = negativeEmoji.filter(emoji => message.includes(emoji)).length;
+    if (emojiCount >= 2) {
+        return {
+            isProblematic: true,
+            reason: 'negative_emoji'
+        };
+    }
+    
+    return { isProblematic: false };
+}
+
+// Show lashon hara warning modal
+function showLashonHaraWarning() {
+    // Create modal if it doesn't exist
+    let modal = document.getElementById('lashonHaraWarningModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'lashonHaraWarningModal';
+        modal.className = 'lashon-hara-modal';
+        modal.innerHTML = `
+            <div class="lashon-hara-modal-content">
+                <div class="lashon-hara-icon">🕊️⚠️</div>
+                <h3>Lashon Hara Detected</h3>
+                <p><strong>Please respect the laws of Lashon Hara in this chat!</strong></p>
+                <div class="lashon-hara-reminder">
+                    <p>This is a sacred space dedicated to positive speech and Torah learning.</p>
+                    <p><em>"The tongue has the power of life and death" - Mishlei 18:21</em></p>
+                    <ul>
+                        <li>✓ Speak kindly about others</li>
+                        <li>✓ Judge favorably (Dan L'Kaf Zechut)</li>
+                        <li>✓ Share Torah insights and encouragement</li>
+                        <li>✗ Avoid gossip, negativity, and criticism</li>
+                    </ul>
+                </div>
+                <button id="lashonHaraOkBtn" class="lashon-hara-ok-btn">I Understand</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        // Add event listener
+        document.getElementById('lashonHaraOkBtn').addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+    }
+    
+    modal.style.display = 'flex';
+    
+    // Auto-hide after 10 seconds
+    setTimeout(() => {
+        modal.style.display = 'none';
+    }, 10000);
+}
+
 async function sendCommunityMessage() {
     const input = document.getElementById('communityMessageInput');
     const message = input.value.trim();
     
     if (!message || !currentUser) return;
     
+    // Screen for lashon hara
+    const screening = screenForLashonHara(message);
+    if (screening.isProblematic) {
+        // Show enhanced warning modal
+        showLashonHaraWarning();
+        
+        // Log the attempt for review
+        try {
+            await addDoc(collection(db, 'moderationLog'), {
+                userId: currentUser.id,
+                userName: currentUser.name,
+                message: message,
+                reason: screening.reason,
+                keyword: screening.keyword || null,
+                timestamp: serverTimestamp(),
+                action: 'blocked'
+            });
+        } catch (error) {
+            console.error('Error logging blocked message:', error);
+        }
+        
+        // Clear input
+        input.value = '';
+        return;
+    }
+    
     try {
         await addDoc(collection(db, 'communityChat'), {
             userId: currentUser.id,
             userName: currentUser.name,
             message: message,
-            timestamp: serverTimestamp()
+            timestamp: serverTimestamp(),
+            flagged: false,
+            flagCount: 0
         });
         
         input.value = '';
@@ -1278,6 +1570,88 @@ async function updateOnlineCount() {
         console.error('Error updating online count:', error);
     }
 }
+
+// Flag message function - Enhanced with review queue
+async function flagMessage(messageId) {
+    if (!currentUser) return;
+    
+    const confirmFlag = confirm('🚩 Flag this message?\n\nMessages flagged will be:\n• Immediately hidden from view\n• Sent to moderators for review\n• Deleted if confirmed inappropriate\n\nContinue?');
+    if (!confirmFlag) return;
+    
+    try {
+        const messageRef = doc(db, 'communityChat', messageId);
+        const messageDoc = await getDoc(messageRef);
+        
+        if (!messageDoc.exists()) {
+            alert('Message not found.');
+            return;
+        }
+        
+        const currentData = messageDoc.data();
+        
+        // Check if user already flagged this message
+        const flaggedBy = currentData.flaggedBy || [];
+        if (flaggedBy.includes(currentUser.id)) {
+            alert('You have already flagged this message.');
+            return;
+        }
+        
+        const newFlagCount = (currentData.flagCount || 0) + 1;
+        
+        // Auto-delete if 2 or more flags (lowered threshold for quick action)
+        if (newFlagCount >= 2) {
+            // Move to review queue before deletion
+            await addDoc(collection(db, 'flaggedMessages'), {
+                originalId: messageId,
+                userId: currentData.userId,
+                userName: currentData.userName,
+                message: currentData.message,
+                timestamp: currentData.timestamp,
+                flagCount: newFlagCount,
+                flaggedBy: [...flaggedBy, currentUser.id],
+                deletedAt: serverTimestamp(),
+                status: 'auto-deleted',
+                reviewed: false
+            });
+            
+            // Delete the message
+            await deleteDoc(messageRef);
+            
+            alert('⚠️ Message removed!\n\nThis message has been:\n✓ Automatically deleted due to multiple flags\n✓ Sent to moderators for review\n✓ May be restored if deemed appropriate');
+        } else {
+            // Update flag count and hide message
+            await updateDoc(messageRef, {
+                flagged: true,
+                flagCount: newFlagCount,
+                flaggedBy: [...flaggedBy, currentUser.id],
+                hidden: true,
+                flaggedAt: serverTimestamp()
+            });
+            
+            // Add to moderation queue for review
+            await addDoc(collection(db, 'moderationQueue'), {
+                messageId: messageId,
+                userId: currentData.userId,
+                userName: currentData.userName,
+                message: currentData.message,
+                timestamp: currentData.timestamp,
+                flagCount: newFlagCount,
+                flaggedBy: [...flaggedBy, currentUser.id],
+                status: 'pending_review',
+                createdAt: serverTimestamp()
+            });
+            
+            alert(`✓ Message flagged and hidden!\n\nFlag count: ${newFlagCount}/2\nThe message has been hidden from view and sent for moderator review.`);
+        }
+    } catch (error) {
+        console.error('Error flagging message:', error);
+        alert('Failed to flag message. Please try again.');
+    }
+}
+
+// Make flagMessage global so it can be called from onclick
+window.flagMessage = flagMessage;
+
 
 // Private Messages
 let allUsers = [];
@@ -1407,22 +1781,42 @@ function addMessageToChat(msg, type) {
         document.getElementById('communityMessages') : 
         document.getElementById('privateMessages');
     
+    // Don't display hidden/flagged messages to regular users
+    if (msg.hidden && msg.userId !== currentUser.id) {
+        return;
+    }
+    
     const isOwnMessage = msg.userId === currentUser.id || msg.senderId === currentUser.id;
     const messageClass = isOwnMessage ? 'own-message' : 'other-message';
     
     const messageDiv = document.createElement('div');
     messageDiv.className = `chat-message ${messageClass}`;
+    messageDiv.dataset.messageId = msg.id;
     
     const time = msg.timestamp?.toDate ? 
         msg.timestamp.toDate().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) :
         'Just now';
     
+    // Check if message is flagged
+    const flaggedClass = msg.flagged ? ' flagged-message' : '';
+    const flagCountText = msg.flagCount > 0 ? ` <span class="flag-count" title="This message has been flagged">🚩${msg.flagCount}</span>` : '';
+    
+    // Add flag button for community messages (only for other people's messages)
+    const flagButton = type === 'community' && !isOwnMessage ? 
+        `<button class="flag-btn" onclick="flagMessage('${msg.id}')" title="Flag inappropriate content">🚩 Report</button>` : '';
+    
+    // Show hidden notice if it's the user's own flagged message
+    const hiddenNotice = msg.hidden && isOwnMessage ? 
+        `<div class="message-hidden-notice">⚠️ This message is under review</div>` : '';
+    
     messageDiv.innerHTML = `
         <div class="message-header">
             <span class="message-sender">${msg.userName || msg.senderName || 'User'}</span>
-            <span class="message-time">${time}</span>
+            <span class="message-time">${time}${flagCountText}</span>
+            ${flagButton}
         </div>
-        <div class="message-text">${escapeHtml(msg.message)}</div>
+        <div class="message-text${flaggedClass}">${escapeHtml(msg.message)}</div>
+        ${hiddenNotice}
     `;
     
     container.appendChild(messageDiv);
