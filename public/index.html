@@ -104,7 +104,7 @@
         <!-- Dedication Banner -->
         <div class="dedication-banner">
             <div class="dedication-content">
-                <p class="dedication-text">
+                <p class="dedication-text" data-i18n="dedication">
                     In honor of my Brother <strong>Yosef Yisroel Meyer</strong> named after the Chofetz Chaim for being such a role model on giving the benefit of the doubt and avoiding negative speech or judgement on others as well as my best friend <strong>Dr. Sima Bracha Shulman</strong> for being the greatest best friend a girl could have and for lending me her Shmiras halashon a lesson a day set with which I started to learn daily lessons and quickly found it so helpful in my daily growth and so life changing! May every lesson learned be in their righteous merit and in their zechus and may all their tefilot be answered amen! ❤️
                 </p>
             </div>
@@ -198,12 +198,12 @@
                     
                     <!-- Dashboard Tabs -->
                     <div class="dashboard-tabs">
-                        <button class="dashboard-tab active" data-tab="bot">🕊️ Chofetz Chaim Bot</button>
-                        <button class="dashboard-tab" data-tab="lesson">📖 A Lesson A Day</button>
-                        <button class="dashboard-tab" data-tab="chizuk">� Chizuk</button>
-                        <button class="dashboard-tab" data-tab="prayer">🙏 Daily Prayer</button>
-                        <button class="dashboard-tab" data-tab="community">👥 Learning Together</button>
-                        <button class="dashboard-tab" data-tab="tracker">📊 Progress Tracker</button>
+                        <button class="dashboard-tab active" data-tab="bot" data-i18n="botTab">🕊️ Chofetz Chaim Bot</button>
+                        <button class="dashboard-tab" data-tab="lesson" data-i18n="lessonTab">📖 A Lesson A Day</button>
+                        <button class="dashboard-tab" data-tab="chizuk" data-i18n="chizukTab">💪 Chizuk</button>
+                        <button class="dashboard-tab" data-tab="prayer" data-i18n="prayerTab">🙏 Daily Prayer</button>
+                        <button class="dashboard-tab" data-tab="community" data-i18n="communityTab">👥 Learning Together</button>
+                        <button class="dashboard-tab" data-tab="tracker" data-i18n="trackerTab">📊 Progress Tracker</button>
                     </div>
 
                     <!-- Bot Tab Content -->
@@ -617,18 +617,19 @@
                     <div id="chizukTab" class="dashboard-tab-content">
                         <div class="chizuk-section">
                             <div class="chizuk-header">
-                                <h3>💪 Chizuk - Inspiration & Shiurim</h3>
-                                <p class="chizuk-intro">Watch inspiring shiurim on Shmiras HaLashon from great Torah teachers. Share videos that strengthen you!</p>
+                                <h3 data-i18n="chizukTitle">💪 Chizuk - Inspiration & Shiurim</h3>
+                                <p class="chizuk-intro" data-i18n="chizukSubtitle">Watch inspiring shiurim on Shmiras HaLashon from great Torah teachers. Share videos that strengthen you!</p>
                             </div>
 
                             <!-- Add Video Form -->
                             <div class="add-video-card">
-                                <h4>📤 Share a Shiur</h4>
+                                <h4 data-i18n="shareShiur">📤 Share a Shiur</h4>
                                 <form id="addVideoForm" class="add-video-form">
                                     <div class="form-row">
                                         <input 
                                             type="text" 
                                             id="videoUrl" 
+                                            data-i18n="videoURL"
                                             placeholder="YouTube video URL (e.g., https://youtube.com/watch?v=...)"
                                             required
                                         />
