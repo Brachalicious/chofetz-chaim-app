@@ -117,34 +117,45 @@
                 <div class="chat-container">
                     <div id="chatMessages" class="chat-messages">
                         <div class="welcome-message">
-                            <h2 data-i18n="welcomeTitle">Shalom! 👋</h2>
-                            <p data-i18n="welcomeMessage">Welcome to your personal Shmiras HaLashon guide. Ask me anything about guarding your speech, avoiding lashon hara, or living the teachings of the Chofetz Chaim.</p>
-                            
-                            <!-- Important Disclaimer -->
-                            <div style="margin: 20px 0; padding: 20px; background: #fff3cd; border-left: 4px solid #ff9800; border-radius: 8px; color: #856404;">
-                                <p style="margin: 0 0 10px 0; font-weight: bold; font-size: 1em;">⚠️ Important Notice</p>
-                                <p style="margin: 0 0 10px 0; font-size: 0.9em; line-height: 1.5;">
-                                    This chatbot is <strong>not a rabbi</strong> and should not be relied upon for final halachic decisions. If answers are unclear or if you have further questions, please consult a qualified rabbi or call:
-                                </p>
-                                <div style="background: white; padding: 15px; border-radius: 8px; margin-top: 15px; border: 2px solid #ff9800;">
-                                    <p style="margin: 0 0 8px 0; font-weight: bold; color: #2c5aa0; font-size: 1.1em;">📞 THE SHMIRAS HALOSHON SHAILA HOTLINE</p>
-                                    <p style="margin: 0 0 8px 0; font-size: 0.9em; line-height: 1.6;">
-                                        <em>To say or not to say?</em> Whether it is for a shidduch, a job referral, or just among family or friends, the wrong words can do irreparable harm. And sometimes, so can silence. Our Shaila Hotline puts you in contact with expert rabbonim so that before you speak, you can be sure.
-                                    </p>
-                                    <p style="margin: 8px 0 0 0; font-size: 0.85em;"><strong>Hours:</strong> Evenings from 9:00 to 10:30 PM</p>
-                                    <p style="margin: 8px 0 0 0;">
-                                        <a href="tel:7189513696" style="display: inline-block; background: #2c5aa0; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; margin-top: 10px;">
-                                            📞 CALL: 718-951-3696
-                                        </a>
-                                    </p>
+                            <div class="welcome-content-wrapper">
+                                <div class="welcome-text">
+                                    <h2 data-i18n="welcomeTitle">Shalom! 👋</h2>
+                                    <p data-i18n="welcomeMessage">Welcome to your personal Shmiras HaLashon guide. Ask me anything about guarding your speech, avoiding lashon hara, or living the teachings of the Chofetz Chaim.</p>
+                                    
+                                    <!-- Important Disclaimer -->
+                                    <div style="margin: 20px 0; padding: 20px; background: #fff3cd; border-left: 4px solid #ff9800; border-radius: 8px; color: #856404;">
+                                        <p style="margin: 0 0 10px 0; font-weight: bold; font-size: 1em;" data-i18n="importantNotice">⚠️ Important Notice</p>
+                                        <p style="margin: 0 0 10px 0; font-size: 0.9em; line-height: 1.5;" data-i18n="notRabbi">
+                                            This chatbot is <strong>not a rabbi</strong> and should not be relied upon for final halachic decisions. If answers are unclear or if you have further questions, please consult a qualified rabbi or call:
+                                        </p>
+                                        <div style="background: white; padding: 15px; border-radius: 8px; margin-top: 15px; border: 2px solid #ff9800;">
+                                            <p style="margin: 0 0 8px 0; font-weight: bold; color: #2c5aa0; font-size: 1.1em;" data-i18n="hotlineTitle">📞 THE SHMIRAS HALOSHON SHAILA HOTLINE</p>
+                                            <p style="margin: 0 0 8px 0; font-size: 0.9em; line-height: 1.6;" data-i18n="hotlineDescription">
+                                                <em>To say or not to say?</em> Whether it is for a shidduch, a job referral, or just among family or friends, the wrong words can do irreparable harm. And sometimes, so can silence. Our Shaila Hotline puts you in contact with expert rabbonim so that before you speak, you can be sure.
+                                            </p>
+                                            <p style="margin: 8px 0 0 0; font-size: 0.85em;"><strong data-i18n="hotlineHours">Hours:</strong> <span data-i18n="hotlineTime">Evenings from 9:00 to 10:30 PM</span></p>
+                                            <p style="margin: 8px 0 0 0;">
+                                                <a href="tel:7189513696" style="display: inline-block; background: #2c5aa0; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; margin-top: 10px;" data-i18n="callNow">
+                                                    📞 CALL: 718-951-3696
+                                                </a>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="quick-questions">
+                                        <p><strong data-i18n="tryAsking">Try asking:</strong></p>
+                                        <button class="quick-q" data-q="What is lashon hara?" data-i18n="quickQuestion1">What is lashon hara?</button>
+                                        <button class="quick-q" data-q="How can I avoid gossip at work?" data-i18n="quickQuestion2">How can I avoid gossip at work?</button>
+                                        <button class="quick-q" data-q="What should I do if I hear lashon hara?" data-i18n="quickQuestion3">What should I do if I hear lashon hara?</button>
+                                    </div>
                                 </div>
-                            </div>
-                            
-                            <div class="quick-questions">
-                                <p><strong data-i18n="tryAsking">Try asking:</strong></p>
-                                <button class="quick-q" data-q="What is lashon hara?" data-i18n="quickQuestion1">What is lashon hara?</button>
-                                <button class="quick-q" data-q="How can I avoid gossip at work?" data-i18n="quickQuestion2">How can I avoid gossip at work?</button>
-                                <button class="quick-q" data-q="What should I do if I hear lashon hara?" data-i18n="quickQuestion3">What should I do if I hear lashon hara?</button>
+                                
+                                <div class="welcome-image">
+                                    <div class="chofetz-chaim-portrait">
+                                        <img src="/chofetz_chaim.svg" alt="Chofetz Chaim" />
+                                        <p class="portrait-caption" data-i18n="chofetzChaimCaption">The Chofetz Chaim</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -210,15 +221,15 @@
                     <div id="botTab" class="dashboard-tab-content active">
                         <div class="bot-display">
                             <img src="/chofetz_chaim.svg" alt="Chofetz Chaim" id="dashboardBotImage">
-                            <p class="bot-message">Click me to start a conversation about Shmiras HaLashon</p>
+                            <p class="bot-message" data-i18n="botMessage">Click me to start a conversation about Shmiras HaLashon</p>
                         </div>
                     </div>
 
                     <!-- Prayer Tab Content -->
                     <div id="prayerTab" class="dashboard-tab-content">
                         <div class="tefilah-section">
-                            <h3>🙏 <span data-i18n="tefilahAlHadibur">Tefilah Al HaDibur</span> - Prayer for Speech</h3>
-                            <p class="tefilah-intro">Recite this beautiful prayer daily to help guard your speech and strengthen your commitment to Shmiras HaLashon.</p>
+                            <h3>🙏 <span data-i18n="tefilahAlHadibur">Tefilah Al HaDibur</span> - <span data-i18n="prayerForSpeech">Prayer for Speech</span></h3>
+                            <p class="tefilah-intro" data-i18n="prayerIntro">Recite this beautiful prayer daily to help guard your speech and strengthen your commitment to Shmiras HaLashon.</p>
                             <div class="tefilah-card">
                                 <div class="tefilah-hebrew">
                                     <p class="tefilah-title">תְּפִלָּה עַל הַדִּבּוּר</p>
@@ -228,15 +239,15 @@
                                     <p>וּתְקַדֵּשׁ פִּי לְשֵׁם קָדְשֶׁךָ, וּתְטַהֵר לִבִּי לַעֲבוֹדָתֶךָ בֶּאֱמֶת. וְתִזְכְּרֵנִי לְשׁוֹן טוֹבָה לְשַׁבֵּחַ לְהַלֵּל וּלְפָאֵר אֶת שִׁמְךָ הַקָּדוֹשׁ תָּמִיד.</p>
                                 </div>
                                 <div class="tefilah-english">
-                                    <p class="tefilah-title">Prayer for Guarding One's Speech</p>
-                                    <p><em>Master of the Universe, may it be Your will, Hashem my God and God of my fathers, that You protect me today and every day from arrogant people and from arrogance.</em></p>
-                                    <p><em>Save me from lashon hara (evil speech) and from those who speak lashon hara. Guard me from speaking, hearing, or accepting lashon hara about my fellow Jews, for any reason or cause.</em></p>
-                                    <p><em>May hatred of no person enter my heart. Protect me forever from the affliction of tzara'as (spiritual leprosy), especially from the affliction caused by lashon hara.</em></p>
-                                    <p><em>Sanctify my mouth for Your holy Name, and purify my heart to serve You in truth. Grant me a good tongue to praise, laud, and glorify Your holy Name always.</em></p>
+                                    <p class="tefilah-title" data-i18n="prayerTitle">Prayer for Guarding One's Speech</p>
+                                    <p><em data-i18n="prayerPara1">Master of the Universe, may it be Your will, Hashem my God and God of my fathers, that You protect me today and every day from arrogant people and from arrogance.</em></p>
+                                    <p><em data-i18n="prayerPara2">Save me from lashon hara (evil speech) and from those who speak lashon hara. Guard me from speaking, hearing, or accepting lashon hara about my fellow Jews, for any reason or cause.</em></p>
+                                    <p><em data-i18n="prayerPara3">May hatred of no person enter my heart. Protect me forever from the affliction of tzara'as (spiritual leprosy), especially from the affliction caused by lashon hara.</em></p>
+                                    <p><em data-i18n="prayerPara4">Sanctify my mouth for Your holy Name, and purify my heart to serve You in truth. Grant me a good tongue to praise, laud, and glorify Your holy Name always.</em></p>
                                 </div>
                                 <div class="tefilah-actions">
-                                    <button id="copyTefilahBtn" class="btn-secondary">📋 Copy Prayer</button>
-                                    <button id="printTefilahBtn" class="btn-secondary">🖨️ Print</button>
+                                    <button id="copyTefilahBtn" class="btn-secondary" data-i18n="copyPrayer">📋 Copy Prayer</button>
+                                    <button id="printTefilahBtn" class="btn-secondary" data-i18n="printPrayer">🖨️ Print</button>
                                 </div>
                             </div>
                         </div>
@@ -245,28 +256,29 @@
                     <!-- Learning Together (Community) Tab Content -->
                     <div id="communityTab" class="dashboard-tab-content">
                         <div class="community-section">
-                            <h3>👥 Learning Together</h3>
+                            <h3><span data-i18n="communityTab">👥 Learning Together</span></h3>
                             
                             <!-- Toggle between Community Feed and Live Chat -->
                             <div class="learning-together-toggle">
                                 <button class="learning-mode-btn active" data-mode="feed">
-                                    📰 Community Feed
+                                    <span data-i18n="communityFeed">📰 Community Feed</span>
                                 </button>
                                 <button class="learning-mode-btn" data-mode="chat">
-                                    💬 Live Chat
+                                    <span data-i18n="liveChat">💬 Live Chat</span>
                                 </button>
                             </div>
 
                             <!-- Community Feed Section -->
                             <div id="communityFeedSection" class="learning-together-section active">
-                                <p class="community-intro">Join others in their journey of Shmiras HaLashon! See what lessons the community is learning and share your own progress.</p>
+                                <p class="community-intro" data-i18n="communityIntro">Join others in their journey of Shmiras HaLashon! See what lessons the community is learning and share your own progress.</p>
                                 
                                 <!-- Share Your Progress -->
                                 <div class="share-progress-card">
-                                <h4>📢 Share Your Latest Accomplishment</h4>
+                                <h4><span data-i18n="shareAccomplishment">📢 Share Your Latest Accomplishment</span></h4>
                                 <div class="share-input-container">
                                     <textarea 
                                         id="shareInput" 
+                                        data-i18n-placeholder="shareThoughts"
                                         placeholder="Share your thoughts about today's lesson or a milestone you achieved..."
                                         rows="3"
                                         maxlength="280"
@@ -275,21 +287,21 @@
                                         <span id="charCount">0</span>/280
                                     </div>
                                     <button id="postShareBtn" class="btn-primary">
-                                        <span>🚀 Share with Community</span>
+                                        <span data-i18n="shareWithCommunity">🚀 Share with Community</span>
                                     </button>
                                 </div>
                             </div>
 
                             <!-- Community Feed -->
                             <div class="community-feed">
-                                <h4>📰 Recent Updates from the Community</h4>
+                                <h4><span data-i18n="recentUpdates">📰 Recent Updates from the Community</span></h4>
                                 <div class="feed-filters">
-                                    <button class="filter-btn active" data-filter="all">All Posts</button>
-                                    <button class="filter-btn" data-filter="completions">Lesson Completions</button>
-                                    <button class="filter-btn" data-filter="milestones">Milestones</button>
+                                    <button class="filter-btn active" data-filter="all" data-i18n="allPosts">All Posts</button>
+                                    <button class="filter-btn" data-filter="completions" data-i18n="lessonCompletions">Lesson Completions</button>
+                                    <button class="filter-btn" data-filter="milestones" data-i18n="milestonesFilter">Milestones</button>
                                 </div>
                                 <div id="communityFeedList" class="feed-list">
-                                    <div class="loading-spinner">Loading community updates...</div>
+                                    <div class="loading-spinner" data-i18n="loadingUpdates">Loading community updates...</div>
                                 </div>
                             </div>
                         </div>
@@ -298,30 +310,30 @@
                         <!-- Live Chat Section -->
                         <div id="liveChatSection" class="learning-together-section">
                             <div class="live-chat-container">
-                                <p class="community-intro">Connect with fellow learners in real-time! Chat, share insights, and find study partners.</p>
+                                <p class="community-intro" data-i18n="liveChatIntro">Connect with fellow learners in real-time! Chat, share insights, and find study partners.</p>
                                 
                                 <!-- Chat Mode Selector -->
                                 <div class="chat-mode-selector">
                                     <button class="chat-mode-btn active" data-mode="community">
-                                        🌍 Community Room
+                                        <span data-i18n="communityRoomBtn">🌍 Community Room</span>
                                     </button>
                                     <button class="chat-mode-btn" data-mode="partners">
-                                        🤝 Study Partners
+                                        <span data-i18n="studyPartnersBtn">🤝 Study Partners</span>
                                     </button>
                                 </div>
 
                                 <!-- Community Chat Room -->
                                 <div id="communityChatRoom" class="chat-room active">
                                     <div class="chat-header">
-                                        <h4>🌍 Community Chat Room</h4>
+                                        <h4><span data-i18n="communityRoomTitle">🌍 Community Chat Room</span></h4>
                                         <div class="online-count">
                                             <span class="online-dot"></span>
-                                            <span id="onlineUsersCount">0</span> online
+                                            <span id="onlineUsersCount">0</span> <span data-i18n="online">online</span>
                                         </div>
                                     </div>
                                     
                                     <div id="communityMessages" class="chat-messages-container">
-                                        <div class="chat-welcome">
+                                        <div class="chat-welcome" data-i18n="chatWelcome">
                                             Welcome! Share insights, ask questions, and learn together. Remember: This is a space for positive, Torah-guided conversation. 🕊️
                                         </div>
                                     </div>
@@ -330,10 +342,11 @@
                                         <input 
                                             type="text" 
                                             id="communityMessageInput" 
+                                            data-i18n-placeholder="typeMessagePlaceholder"
                                             placeholder="Type your message... (Be kind, be respectful)"
                                             maxlength="500"
                                         />
-                                        <button id="sendCommunityMessageBtn" class="chat-send-btn">📤 Send</button>
+                                        <button id="sendCommunityMessageBtn" class="chat-send-btn"><span data-i18n="send">📤 Send</span></button>
                                     </div>
                                 </div>
 
@@ -341,20 +354,20 @@
                                 <div id="studyPartnersRoom" class="chat-room">
                                     <div class="study-partners-container">
                                         <div class="partners-header">
-                                            <h4>🤝 Your Study Partners (Chavrusa)</h4>
-                                            <p>Find partners, chat with them, and learn together via video!</p>
+                                            <h4><span data-i18n="yourStudyPartners">🤝 Your Study Partners (Chavrusa)</span></h4>
+                                            <p data-i18n="partnersDescription">Find partners, chat with them, and learn together via video!</p>
                                         </div>
 
                                         <!-- Study Mode Toggle -->
                                         <div class="study-mode-toggle">
                                             <button class="study-mode-btn active" data-study-mode="profile">
-                                                📝 Find Partners
+                                                <span data-i18n="profileTab">📝 Find Partners</span>
                                             </button>
                                             <button class="study-mode-btn" data-study-mode="chat">
-                                                💬 Chat with Partner
+                                                <span data-i18n="chatTab">💬 Chat with Partner</span>
                                             </button>
                                             <button class="study-mode-btn" data-study-mode="video">
-                                                📹 Video Sessions
+                                                <span data-i18n="videoTab">📹 Video Sessions</span>
                                             </button>
                                         </div>
 
@@ -362,57 +375,58 @@
                                         <div id="profileMatchingSection" class="study-mode-section active">
                                             <!-- My Profile for Matching -->
                                             <div class="partner-profile-card">
-                                                <h5>📝 Your Study Profile</h5>
+                                                <h5><span data-i18n="yourStudyProfile">📝 Your Study Profile</span></h5>
                                                 <div class="profile-form">
                                                     <label>
-                                                        Preferred Study Time:
+                                                        <span data-i18n="studyTimePreference">Preferred Study Time:</span>
                                                         <select id="studyTimePreference">
-                                                            <option value="">Select time...</option>
-                                                            <option value="morning">Morning (6am-12pm)</option>
-                                                            <option value="afternoon">Afternoon (12pm-6pm)</option>
-                                                            <option value="evening">Evening (6pm-12am)</option>
-                                                            <option value="flexible">Flexible</option>
+                                                            <option value="" data-i18n="selectTime">Select time...</option>
+                                                            <option value="morning" data-i18n="morning">Morning (6am-12pm)</option>
+                                                            <option value="afternoon" data-i18n="afternoon">Afternoon (12pm-6pm)</option>
+                                                            <option value="evening" data-i18n="evening">Evening (6pm-12am)</option>
+                                                            <option value="flexible" data-i18n="flexible">Flexible</option>
                                                         </select>
                                                     </label>
                                                     
                                                     <label>
-                                                        Study Level:
+                                                        <span data-i18n="studyLevelLabel">Study Level:</span>
                                                         <select id="studyLevel">
-                                                            <option value="">Select level...</option>
-                                                            <option value="beginner">Beginner</option>
-                                                            <option value="intermediate">Intermediate</option>
-                                                            <option value="advanced">Advanced</option>
+                                                            <option value="" data-i18n="selectLevel">Select level...</option>
+                                                            <option value="beginner" data-i18n="beginner">Beginner</option>
+                                                            <option value="intermediate" data-i18n="intermediate">Intermediate</option>
+                                                            <option value="advanced" data-i18n="advanced">Advanced</option>
                                                         </select>
                                                     </label>
                                                     
                                                     <label>
-                                                        Language Preference:
+                                                        <span data-i18n="languagePreferenceLabel">Language Preference:</span>
                                                         <select id="languagePreference">
-                                                            <option value="english">English</option>
-                                                            <option value="hebrew">Hebrew</option>
-                                                            <option value="both">Both</option>
+                                                            <option value="english" data-i18n="english">English</option>
+                                                            <option value="hebrew" data-i18n="hebrew">Hebrew</option>
+                                                            <option value="both" data-i18n="both">Both</option>
                                                         </select>
                                                     </label>
                                                     
                                                     <label>
-                                                        About Me (Optional):
+                                                        <span data-i18n="aboutMe">About Me (Optional):</span>
                                                         <textarea 
                                                             id="studyBio" 
+                                                            data-i18n-placeholder="aboutMePlaceholder"
                                                             placeholder="Tell potential study partners about yourself..."
                                                             maxlength="200"
                                                             rows="3"
                                                         ></textarea>
                                                     </label>
                                                     
-                                                    <button id="saveStudyProfileBtn" class="btn-primary">💾 Save Profile</button>
+                                                    <button id="saveStudyProfileBtn" class="btn-primary"><span data-i18n="saveProfile">💾 Save Profile</span></button>
                                                 </div>
                                             </div>
                                             
                                             <!-- Available Study Partners -->
                                             <div class="available-partners">
-                                                <h5>🔍 Available Study Partners</h5>
+                                                <h5><span data-i18n="availablePartners">🔍 Available Study Partners</span></h5>
                                                 <div id="partnersList" class="partners-grid">
-                                                    <div class="empty-state">Save your profile to see potential study partners!</div>
+                                                    <div class="empty-state" data-i18n="saveProfilePrompt">Save your profile to see potential study partners!</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -423,37 +437,39 @@
                                                 <!-- Users List -->
                                                 <div class="users-sidebar">
                                                     <div class="sidebar-header">
-                                                        <h4>👥 Your Partners</h4>
+                                                        <h4><span data-i18n="yourPartners">👥 Your Partners</span></h4>
                                                         <input 
                                                             type="text" 
                                                             id="searchUsersInput" 
+                                                            data-i18n-placeholder="searchPartners"
                                                             placeholder="Search partners..."
                                                             class="search-input"
                                                         />
                                                     </div>
                                                     <div id="usersList" class="users-list">
-                                                        <div class="empty-state">Loading users...</div>
+                                                        <div class="empty-state" data-i18n="loadingUsers">Loading users...</div>
                                                     </div>
                                                 </div>
                                                 
                                                 <!-- Chat Area -->
                                                 <div class="private-chat-area">
                                                     <div id="privateChatHeader" class="private-chat-header">
-                                                        <div class="no-chat-selected">
+                                                        <div class="no-chat-selected" data-i18n="selectPartner">
                                                             ← Select a study partner to start chatting
                                                         </div>
                                                     </div>
                                                     <div id="privateMessages" class="chat-messages-container">
-                                                        <div class="empty-state">Select a partner to view conversation</div>
+                                                        <div class="empty-state" data-i18n="noConversation">Select a partner to view conversation</div>
                                                     </div>
                                                     <div id="privateMessageInput" class="chat-input-container" style="display: none;">
                                                         <input 
                                                             type="text" 
                                                             id="privateMessageTextInput" 
+                                                            data-i18n-placeholder="typeYourMessage"
                                                             placeholder="Type your message..."
                                                             maxlength="500"
                                                         />
-                                                        <button id="sendPrivateMessageBtn" class="chat-send-btn">📤 Send</button>
+                                                        <button id="sendPrivateMessageBtn" class="chat-send-btn"><span data-i18n="send">📤 Send</span></button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -463,29 +479,29 @@
                                         <div id="videoSessionsSection" class="study-mode-section">
                                             <div class="livestream-container">
                                         <div class="livestream-header">
-                                            <h4>📺 Live Video Learning</h4>
-                                            <p>Learn together face-to-face! Join or host a live study session.</p>
+                                            <h4><span data-i18n="liveVideoLearning">📺 Live Video Learning</span></h4>
+                                            <p data-i18n="videoLearningDescription">Learn together face-to-face! Join or host a live study session.</p>
                                         </div>
 
                                         <!-- Video Controls -->
                                         <div class="video-controls-bar">
                                             <button id="startVideoBtn" class="video-control-btn primary">
-                                                📹 Start Video Session
+                                                <span data-i18n="startVideoSession">📹 Start Video Session</span>
                                             </button>
                                             <button id="joinVideoBtn" class="video-control-btn">
-                                                🚪 Join Existing Session
+                                                <span data-i18n="joinExistingSession">🚪 Join Existing Session</span>
                                             </button>
                                             <div class="session-status">
                                                 <span class="status-dot"></span>
-                                                <span id="sessionStatus">Not Connected</span>
+                                                <span id="sessionStatus" data-i18n="notConnected">Not Connected</span>
                                             </div>
                                         </div>
 
                                         <!-- Active Sessions List -->
                                         <div id="activeSessionsPanel" class="active-sessions-panel">
-                                            <h5>🔴 Active Study Sessions</h5>
+                                            <h5><span data-i18n="activeStudySessions">🔴 Active Study Sessions</span></h5>
                                             <div id="activeSessionsList" class="sessions-list">
-                                                <div class="empty-state">No active sessions. Be the first to start one!</div>
+                                                <div class="empty-state" data-i18n="noActiveSessions">No active sessions. Be the first to start one!</div>
                                             </div>
                                         </div>
 
@@ -493,19 +509,19 @@
                                         <div id="videoGrid" class="video-grid hidden">
                                             <div class="video-main-container">
                                                 <video id="localVideo" autoplay muted playsinline></video>
-                                                <div class="video-label local">You</div>
+                                                <div class="video-label local" data-i18n="you">You</div>
                                                 <div class="video-overlay">
                                                     <button id="toggleMicBtn" class="overlay-btn">
-                                                        🎤 <span>Mute</span>
+                                                        🎤 <span data-i18n="mute">Mute</span>
                                                     </button>
                                                     <button id="toggleVideoBtn" class="overlay-btn">
-                                                        📹 <span>Stop Video</span>
+                                                        📹 <span data-i18n="stopVideo">Stop Video</span>
                                                     </button>
                                                     <button id="shareScreenBtn" class="overlay-btn">
-                                                        🖥️ <span>Share Screen</span>
+                                                        🖥️ <span data-i18n="shareScreen">Share Screen</span>
                                                     </button>
                                                     <button id="leaveCallBtn" class="overlay-btn danger">
-                                                        📞 <span>Leave</span>
+                                                        📞 <span data-i18n="leave">Leave</span>
                                                     </button>
                                                 </div>
                                             </div>
@@ -567,13 +583,13 @@
 
                                         <!-- Guidelines -->
                                         <div class="video-guidelines">
-                                            <h6>📋 Video Learning Guidelines</h6>
+                                            <h6><span data-i18n="videoGuidelines">📋 Video Learning Guidelines</span></h6>
                                             <ul>
-                                                <li>✓ Keep video sessions focused on Torah learning</li>
-                                                <li>✓ Dress modestly (tzniut) as per halacha</li>
-                                                <li>✓ Maintain appropriate boundaries (men with men, women with women)</li>
-                                                <li>✓ Be respectful and follow Shmiras HaLashon principles</li>
-                                                <li>✓ Sessions are private and not recorded</li>
+                                                <li data-i18n="guideline1">✓ Keep video sessions focused on Torah learning</li>
+                                                <li data-i18n="guideline2">✓ Dress modestly (tzniut) as per halacha</li>
+                                                <li data-i18n="guideline3">✓ Maintain appropriate boundaries (men with men, women with women)</li>
+                                                <li data-i18n="guideline4">✓ Be respectful and follow Shmiras HaLashon principles</li>
+                                                <li data-i18n="guideline5">✓ Sessions are private and not recorded</li>
                                             </ul>
                                         </div>
                                             </div>
@@ -590,21 +606,30 @@
                     <!-- A Lesson A Day Tab Content -->
                     <div id="lessonTab" class="dashboard-tab-content">
                         <div class="daily-learning-section">
-                            <h3>📖 A Lesson A Day - Shmiras HaLashon</h3>
-                            <p class="lesson-intro">Learn the daily lessons from "A Lesson A Day" by the Chofetz Chaim Heritage Foundation. Each day includes practical halachos and inspiring insights to help you guard your speech.</p>
+                            <h3 data-i18n="lessonTitle">📖 A Lesson A Day - Shmiras HaLashon</h3>
+                            <p class="lesson-intro" data-i18n="lessonIntro">Learn the daily lessons from "A Lesson A Day" by the Chofetz Chaim Heritage Foundation. Each day includes practical halachos and inspiring insights to help you guard your speech.</p>
+                            <p class="hebrew-source-note" style="background: #e3f2fd; padding: 10px; border-radius: 8px; margin: 10px 0; font-size: 0.9em;">
+                                <span data-i18n="hebrewSourceNoteIntro">📚 For Hebrew source texts, visit</span> 
+                                <a href="https://www.sefaria.org/Chofetz_Chaim" target="_blank" rel="noopener noreferrer" style="color: #2c5aa0; font-weight: bold; text-decoration: underline;">Sefaria.org</a> 
+                                <span data-i18n="hebrewSourceNoteEnd">to study the original Sefer Chofetz Chaim and Sefer Shemiras HaLashon in Hebrew.</span>
+                            </p>
+                            
+                            <div id="lessonContentNotice" class="lesson-notice" style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 10px; border-radius: 8px; margin: 10px 0; font-size: 0.9em; display: none;">
+                                <p style="margin: 0;" data-i18n="lessonContentNotice">⚠️ Note: Daily lesson content is currently available in English only. For Hebrew texts, please visit the Sefaria link above.</p>
+                            </div>
                             
                             <div class="daily-lesson-card">
                                 <div class="lesson-header">
-                                    <button id="prevDayBtn" class="nav-btn">◀ Previous</button>
+                                    <button id="prevDayBtn" class="nav-btn"><span data-i18n="previousBtn">Previous</span> ◀</button>
                                     <h4 id="lessonDay">Day 1</h4>
-                                    <button id="nextDayBtn" class="nav-btn">Next ▶</button>
+                                    <button id="nextDayBtn" class="nav-btn">▶ <span data-i18n="nextBtn">Next</span></button>
                                 </div>
                                 <div id="lessonContent" class="lesson-content">
                                     <!-- Lesson content will be loaded here -->
                                 </div>
                                 <div class="lesson-footer">
                                     <p style="font-size: 0.85em; color: #666; text-align: center; margin-top: 20px;">
-                                        <em>A project of Mesorah Publications - Chofetz Chaim Heritage Foundation</em>
+                                        <em data-i18n="mesorahCredit">A project of Mesorah Publications - Chofetz Chaim Heritage Foundation</em>
                                     </p>
                                 </div>
                             </div>
@@ -629,7 +654,7 @@
                                         <input 
                                             type="text" 
                                             id="videoUrl" 
-                                            data-i18n="videoURL"
+                                            data-i18n-placeholder="videoURL"
                                             placeholder="YouTube video URL (e.g., https://youtube.com/watch?v=...)"
                                             required
                                         />
@@ -638,6 +663,7 @@
                                         <input 
                                             type="text" 
                                             id="videoTitle" 
+                                            data-i18n-placeholder="videoTitle"
                                             placeholder="Title (e.g., Rabbi's Name - Topic)"
                                             required
                                         />
@@ -645,6 +671,7 @@
                                     <div class="form-row">
                                         <textarea 
                                             id="videoDescription" 
+                                            data-i18n-placeholder="videoDescription"
                                             placeholder="Description (optional) - What's special about this shiur?"
                                             rows="2"
                                             maxlength="200"
@@ -652,16 +679,16 @@
                                     </div>
                                     <div class="form-row">
                                         <select id="videoCategory">
-                                            <option value="">Select Category...</option>
-                                            <option value="general">General Shmiras HaLashon</option>
-                                            <option value="laws">Laws & Halachos</option>
-                                            <option value="stories">Stories & Inspiration</option>
-                                            <option value="mussar">Mussar & Character Development</option>
-                                            <option value="chofetz-chaim">About the Chofetz Chaim</option>
-                                            <option value="practical">Practical Applications</option>
+                                            <option value="" data-i18n="selectCategory">Select Category...</option>
+                                            <option value="general" data-i18n="categoryGeneral">General Shmiras HaLashon</option>
+                                            <option value="laws" data-i18n="categoryLaws">Laws & Halachos</option>
+                                            <option value="stories" data-i18n="categoryStories">Stories & Inspiration</option>
+                                            <option value="mussar" data-i18n="categoryMussar">Mussar & Character Development</option>
+                                            <option value="chofetz-chaim" data-i18n="categoryChofetzChaim">About the Chofetz Chaim</option>
+                                            <option value="practical" data-i18n="categoryPractical">Practical Applications</option>
                                         </select>
                                     </div>
-                                    <button type="submit" class="btn-primary">
+                                    <button type="submit" class="btn-primary" data-i18n="addShiur">
                                         ➕ Add Shiur
                                     </button>
                                 </form>
@@ -670,23 +697,23 @@
                             <!-- Filter & Sort -->
                             <div class="video-filters">
                                 <div class="filter-group">
-                                    <label>Category:</label>
+                                    <label data-i18n="categoryLabel">Category:</label>
                                     <select id="filterCategory" class="filter-select">
-                                        <option value="all">All Categories</option>
-                                        <option value="general">General</option>
-                                        <option value="laws">Laws & Halachos</option>
-                                        <option value="stories">Stories & Inspiration</option>
-                                        <option value="mussar">Mussar</option>
-                                        <option value="chofetz-chaim">Chofetz Chaim</option>
-                                        <option value="practical">Practical</option>
+                                        <option value="all" data-i18n="allCategories">All Categories</option>
+                                        <option value="general" data-i18n="categoryGeneral">General</option>
+                                        <option value="laws" data-i18n="categoryLaws">Laws & Halachos</option>
+                                        <option value="stories" data-i18n="categoryStories">Stories & Inspiration</option>
+                                        <option value="mussar" data-i18n="categoryMussar">Mussar</option>
+                                        <option value="chofetz-chaim" data-i18n="categoryChofetzChaim">Chofetz Chaim</option>
+                                        <option value="practical" data-i18n="categoryPractical">Practical</option>
                                     </select>
                                 </div>
                                 <div class="filter-group">
-                                    <label>Sort by:</label>
+                                    <label data-i18n="sortByLabel">Sort by:</label>
                                     <select id="sortVideos" class="filter-select">
-                                        <option value="recent">Most Recent</option>
-                                        <option value="popular">Most Popular</option>
-                                        <option value="title">Title A-Z</option>
+                                        <option value="recent" data-i18n="mostRecent">Most Recent</option>
+                                        <option value="popular" data-i18n="mostPopular">Most Popular</option>
+                                        <option value="title" data-i18n="titleAZ">Title A-Z</option>
                                     </select>
                                 </div>
                             </div>
@@ -694,8 +721,8 @@
                             <!-- Videos Grid -->
                             <div id="videosGrid" class="videos-grid">
                                 <div class="empty-state">
-                                    <p>No shiurim yet. Be the first to share!</p>
-                                    <p>💡 Add inspiring videos about Shmiras HaLashon</p>
+                                    <p data-i18n="noShiurim">No shiurim yet. Be the first to share!</p>
+                                    <p data-i18n="addInspiring">💡 Add inspiring videos about Shmiras HaLashon</p>
                                 </div>
                             </div>
                         </div>
@@ -724,35 +751,94 @@
 
                     <!-- Completed Lessons -->
                     <div class="completed-lessons-section">
-                        <h3>✅ Completed Lessons</h3>
+                        <h3 data-i18n="completedLessons">✅ Completed Lessons</h3>
                         <div id="completedLessonsList" class="completed-lessons-grid">
-                            <p class="empty-state">Complete lessons to see them here!</p>
+                            <p class="empty-state" data-i18n="completeLessonsPrompt">Complete lessons to see them here!</p>
                         </div>
                     </div>
 
                     <!-- Milestones -->
                     <div class="milestones-section">
-                        <h3>🏆 <span data-i18n="milestones">Milestones</span></h3>
+                        <h3 data-i18n="milestones">🏆 Milestones</h3>
                         <div id="milestonesList" class="milestones-grid">
-                            <p class="empty-state">Keep learning to unlock milestones!</p>
+                            <p class="empty-state" data-i18n="keepLearningMilestones">Keep learning to unlock milestones!</p>
                         </div>
                     </div>
 
                     <!-- Learning Log -->
                     <div class="learning-log-section">
-                        <h3>📝 <span data-i18n="learningLog">Learning Log</span></h3>
+                        <h3 data-i18n="learningLog">📝 Learning Log</h3>
                         <div class="log-input-container">
+                            <!-- Sefaria Section Selector -->
+                            <div class="sefaria-selector" style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600;">
+                                    <span data-i18n="sefariaSection">📚 Studying from Sefaria (Optional):</span>
+                                </label>
+                                <select id="sefariaSection" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.95em;">
+                                    <option value="" data-i18n="selectSefariaSection">-- Select a section from Sefer Chofetz Chaim --</option>
+                                    <optgroup label="Introduction" data-i18n="sefariaIntro">
+                                        <option value="Preface" data-i18n="sefariaPreface">Preface</option>
+                                        <option value="Introduction to the Laws" data-i18n="sefariaIntroLaws">Introduction to the Laws of Lashon Hara & Rechilut</option>
+                                        <option value="Opening Comments" data-i18n="sefariaOpeningComments">Opening Comments</option>
+                                        <option value="Negative Commandments" data-i18n="sefariaNegativeCmd">Negative Commandments</option>
+                                        <option value="Positive Commandments" data-i18n="sefariaPositiveCmd">Positive Commandments</option>
+                                        <option value="Curses" data-i18n="sefariaCurses">Curses</option>
+                                    </optgroup>
+                                    <optgroup label="Part One: Lashon Hara" data-i18n="sefariaPartOne">
+                                        <option value="Part 1, Principle 1" data-i18n="sefariaPart1Prin1">Part 1, Principle 1</option>
+                                        <option value="Part 1, Principle 2" data-i18n="sefariaPart1Prin2">Part 1, Principle 2</option>
+                                        <option value="Part 1, Principle 3" data-i18n="sefariaPart1Prin3">Part 1, Principle 3</option>
+                                        <option value="Part 1, Principle 4" data-i18n="sefariaPart1Prin4">Part 1, Principle 4</option>
+                                        <option value="Part 1, Principle 5" data-i18n="sefariaPart1Prin5">Part 1, Principle 5</option>
+                                        <option value="Part 1, Principle 6" data-i18n="sefariaPart1Prin6">Part 1, Principle 6</option>
+                                        <option value="Part 1, Principle 7" data-i18n="sefariaPart1Prin7">Part 1, Principle 7</option>
+                                        <option value="Part 1, Principle 8" data-i18n="sefariaPart1Prin8">Part 1, Principle 8</option>
+                                        <option value="Part 1, Principle 9" data-i18n="sefariaPart1Prin9">Part 1, Principle 9</option>
+                                        <option value="Part 1, Principle 10" data-i18n="sefariaPart1Prin10">Part 1, Principle 10</option>
+                                    </optgroup>
+                                    <optgroup label="Part Two: Rechilut" data-i18n="sefariaPartTwo">
+                                        <option value="Part 2, Principle 1" data-i18n="sefariaPart2Prin1">Part 2, Principle 1</option>
+                                        <option value="Part 2, Principle 2" data-i18n="sefariaPart2Prin2">Part 2, Principle 2</option>
+                                        <option value="Part 2, Principle 3" data-i18n="sefariaPart2Prin3">Part 2, Principle 3</option>
+                                        <option value="Part 2, Principle 4" data-i18n="sefariaPart2Prin4">Part 2, Principle 4</option>
+                                        <option value="Part 2, Principle 5" data-i18n="sefariaPart2Prin5">Part 2, Principle 5</option>
+                                        <option value="Part 2, Principle 6" data-i18n="sefariaPart2Prin6">Part 2, Principle 6</option>
+                                        <option value="Part 2, Principle 7" data-i18n="sefariaPart2Prin7">Part 2, Principle 7</option>
+                                        <option value="Part 2, Principle 8" data-i18n="sefariaPart2Prin8">Part 2, Principle 8</option>
+                                        <option value="Part 2, Principle 9" data-i18n="sefariaPart2Prin9">Part 2, Principle 9</option>
+                                    </optgroup>
+                                    <optgroup label="Illustrations" data-i18n="sefariaIllustrations">
+                                        <option value="Illustration 1" data-i18n="sefariaIllus1">Illustration 1</option>
+                                        <option value="Illustration 2" data-i18n="sefariaIllus2">Illustration 2</option>
+                                        <option value="Illustration 3" data-i18n="sefariaIllus3">Illustration 3</option>
+                                        <option value="Illustration 4" data-i18n="sefariaIllus4">Illustration 4</option>
+                                        <option value="Illustration 5" data-i18n="sefariaIllus5">Illustration 5</option>
+                                        <option value="Illustration 6" data-i18n="sefariaIllus6">Illustration 6</option>
+                                        <option value="Illustration 7" data-i18n="sefariaIllus7">Illustration 7</option>
+                                        <option value="Illustration 8" data-i18n="sefariaIllus8">Illustration 8</option>
+                                        <option value="Illustration 9" data-i18n="sefariaIllus9">Illustration 9</option>
+                                        <option value="Illustration 10" data-i18n="sefariaIllus10">Illustration 10</option>
+                                        <option value="Illustration 11" data-i18n="sefariaIllus11">Illustration 11</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            
+                            <!-- Manual Entry Textarea -->
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600;">
+                                <span data-i18n="manualEntry">✍️ Or enter manually:</span>
+                            </label>
                             <textarea 
                                 id="logInput" 
+                                data-i18n-placeholder="logPrompt"
                                 placeholder="What did you learn today about Shmiras HaLashon? (e.g., 'Learned about the importance of judging favorably - Chofetz Chaim Chapter 3')"
                                 rows="3"
                             ></textarea>
-                            <button id="addLogBtn" class="btn-primary">
-                                <span>📝 Add Log Entry</span>
+                            <button id="addLogBtn" class="btn-primary" data-i18n="addLogEntry">
+                                📝 Add Log Entry
                             </button>
                         </div>
                         <div id="learningLogList" class="log-entries">
-                            <p class="empty-state">Your learning entries will appear here</p>
+                            <p class="empty-state" data-i18n="learningEntriesPrompt">Your learning entries will appear here</p>
                         </div>
                     </div>
 
@@ -760,7 +846,7 @@
                     <div class="topics-section">
                         <h3>📖 <span data-i18n="topicsDiscussed">Topics Discussed</span></h3>
                         <div id="topicsList" class="topics-cloud">
-                            <p class="empty-state">Topics will appear as you chat</p>
+                            <p class="empty-state" data-i18n="topicsWillAppear">Topics will appear as you chat</p>
                         </div>
                     </div>
 

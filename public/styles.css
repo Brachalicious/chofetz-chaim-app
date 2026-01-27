@@ -81,6 +81,23 @@ body {
     height: auto;
     margin: 0 auto 15px;
     display: block;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+
+.header-logo:hover {
+    transform: scale(1.15) translateY(-5px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+.logo-image {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+
+.logo-image:hover {
+    transform: scale(1.15) translateY(-5px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
 }
 
 .auth-header h1 {
@@ -288,11 +305,25 @@ body {
 .logo .header-logo {
     max-height: 120px;
     width: auto;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+
+.logo .header-logo:hover {
+    transform: scale(1.15) translateY(-5px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
 }
 
 .logo h1 {
-    font-size: 1.8em;
-    color: var(--primary-color);
+    font-size: 1.5em;
+    background: linear-gradient(135deg, #2c5aa0 0%, #667eea 50%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+    white-space: nowrap;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 4px rgba(102, 126, 234, 0.1);
 }
 
 .header-dedication {
@@ -509,6 +540,56 @@ body {
     justify-content: center;
     font-size: 1.2em;
     flex-shrink: 0;
+    transition: all 0.3s ease;
+}
+
+/* Larger, interactive bot avatar */
+.message.bot .message-avatar.bot-avatar-large {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.message.bot .message-avatar.bot-avatar-large:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.message.bot .message-avatar.bot-avatar-large::after {
+    content: '💬';
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    background: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.bot-avatar-img {
+    animation: subtlePulse 3s ease-in-out infinite;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+@keyframes subtlePulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
 }
 
 .message.user .message-avatar {
@@ -533,17 +614,37 @@ body {
     border-bottom-right-radius: 4px;
 }
 
+/* Clickable links in messages */
+.message-content a {
+    color: #2c5aa0;
+    text-decoration: underline;
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+.message-content a:hover {
+    color: #667eea;
+    text-decoration: underline;
+}
+
+.message.user .message-content a {
+    color: #ffffff;
+    text-decoration: underline;
+}
+
+.message.user .message-content a:hover {
+    color: #f0f0f0;
+}
+
 .playback-btn {
     background: var(--accent-color);
     color: white;
     border: none;
     border-radius: 20px;
     padding: 8px 16px;
-    margin-top: 8px;
-    margin-left: 60px;
     cursor: pointer;
     font-size: 0.9em;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 5px;
     transition: all 0.3s ease;
@@ -558,6 +659,40 @@ body {
 
 .playback-btn:active {
     transform: translateY(0);
+}
+
+/* Share message button */
+.share-message-btn {
+    background: #2c5aa0;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 0.9em;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.share-message-btn:hover {
+    background: #1e4278;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.share-message-btn:active {
+    transform: translateY(0);
+}
+
+/* Message actions container */
+.message-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    flex-wrap: wrap;
 }
 
 .typing-indicator {
@@ -3473,6 +3608,17 @@ body {
 
 /* Mobile Devices (max 768px) */
 @media (max-width: 768px) {
+    /* Welcome Portrait Mobile Layout */
+    .welcome-content-wrapper {
+        flex-direction: column;
+    }
+    
+    .welcome-image {
+        width: 100%;
+        max-width: 300px;
+        margin: 0 auto;
+    }
+    
     /* Base Typography */
     body {
         font-size: 14px;
@@ -4174,6 +4320,53 @@ body {
     .dashboard-tabs {
         -webkit-overflow-scrolling: touch;
     }
+}
+
+/* Welcome Message Portrait Layout */
+.welcome-content-wrapper {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+}
+
+.welcome-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.welcome-image {
+    flex-shrink: 0;
+    width: 280px;
+}
+
+.chofetz-chaim-portrait {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.chofetz-chaim-portrait:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(102, 126, 234, 0.4);
+}
+
+.chofetz-chaim-portrait img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    background: white;
+}
+
+.portrait-caption {
+    font-size: 0.9em;
+    color: white;
+    font-weight: 600;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 /* Dark Mode Support (Future Enhancement) */

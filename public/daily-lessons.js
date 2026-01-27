@@ -1138,7 +1138,17 @@ async function loadLesson(day) {
     const lesson = dailyLessons[day];
     if (!lesson) return;
     
-    document.getElementById('lessonDay').textContent = `Day ${day}`;
+    // Import translation function
+    const { t, currentLanguage } = await import('./translations.js');
+    const dayText = t('day');
+    
+    // Show/hide lesson content notice based on language
+    const noticeElement = document.getElementById('lessonContentNotice');
+    if (noticeElement) {
+        noticeElement.style.display = currentLanguage === 'he' ? 'block' : 'none';
+    }
+    
+    document.getElementById('lessonDay').textContent = `${dayText} ${day}`;
     document.getElementById('lessonContent').innerHTML = `
         <h5>${lesson.title}</h5>
         <p style="color: #666; font-size: 0.9em; font-style: italic;">${lesson.section}</p>
@@ -1146,30 +1156,34 @@ async function loadLesson(day) {
         <div class="lesson-completion" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0; text-align: center;">
             <label class="completion-checkbox-label">
                 <input type="checkbox" id="lessonCheckbox" data-day="${day}">
-                <span>✓ I learned this lesson</span>
+                <span data-i18n="iLearnedLesson">✓ I learned this lesson</span>
             </label>
-            <button id="saveLessonBtn" class="save-lesson-btn" data-day="${day}">Save Progress</button>
+            <button id="saveLessonBtn" class="save-lesson-btn" data-day="${day}" data-i18n="saveProgress">Save Progress</button>
             <div id="saveMessage" class="save-message"></div>
             
             <div class="share-lesson-section" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
-                <h5 style="font-size: 1em; margin-bottom: 10px;">📤 Share this accomplishment:</h5>
+                <h5 style="font-size: 1em; margin-bottom: 10px;" data-i18n="shareAccomplishment">📤 Share this accomplishment:</h5>
                 <div class="share-buttons-lesson">
-                    <button class="share-btn whatsapp" data-day="${day}" data-title="${lesson.title}">
+                    <button class="share-btn whatsapp" data-day="${day}" data-title="${lesson.title}" data-i18n="whatsappBtn">
                         💬 WhatsApp
                     </button>
-                    <button class="share-btn sms" data-day="${day}" data-title="${lesson.title}">
+                    <button class="share-btn sms" data-day="${day}" data-title="${lesson.title}" data-i18n="textBtn">
                         📱 Text
                     </button>
-                    <button class="share-btn twitter" data-day="${day}" data-title="${lesson.title}">
+                    <button class="share-btn twitter" data-day="${day}" data-title="${lesson.title}" data-i18n="twitterBtn">
                         🐦 Twitter
                     </button>
-                    <button class="share-btn copy" data-day="${day}" data-title="${lesson.title}">
+                    <button class="share-btn copy" data-day="${day}" data-title="${lesson.title}" data-i18n="copyLinkBtn">
                         📋 Copy Link
                     </button>
                 </div>
             </div>
         </div>
     `;
+    
+    // Update UI language for dynamically added content
+    const { updateUILanguage } = await import('./translations.js');
+    updateUILanguage();
     
     // Wait a moment for DOM to be ready
     await new Promise(resolve => setTimeout(resolve, 0));

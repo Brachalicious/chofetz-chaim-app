@@ -144,7 +144,8 @@ function setupEventListeners() {
     // Quick questions
     document.querySelectorAll('.quick-q').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            const question = e.target.dataset.q;
+            // Use the actual button text (which gets translated) instead of data-q
+            const question = e.target.textContent.trim();
             messageInput.value = question;
             sendMessage(question);
         });
@@ -489,10 +490,23 @@ function printTefilah() {
 // Learning Log Functions
 async function addLearningLog() {
     const logInput = document.getElementById('logInput');
+    const sefariaSection = document.getElementById('sefariaSection');
     const logText = logInput.value.trim();
+    const selectedSection = sefariaSection ? sefariaSection.value : '';
     
-    if (!logText) {
-        alert('Please enter what you learned');
+    // Build the log entry text
+    let finalLogText = '';
+    if (selectedSection) {
+        finalLogText = `📚 ${selectedSection}`;
+        if (logText) {
+            finalLogText += ` - ${logText}`;
+        }
+    } else {
+        finalLogText = logText;
+    }
+    
+    if (!finalLogText) {
+        alert('Please select a Sefaria section or enter what you learned');
         return;
     }
     
@@ -501,7 +515,8 @@ async function addLearningLog() {
     try {
         const logEntry = {
             userId: currentUser.id,
-            content: logText,
+            content: finalLogText,
+            sefariaSection: selectedSection || null,
             timestamp: serverTimestamp(),
             createdAt: new Date().toISOString()
         };
@@ -509,6 +524,7 @@ async function addLearningLog() {
         await addDoc(collection(db, 'learningLogs'), logEntry);
         
         logInput.value = '';
+        if (sefariaSection) sefariaSection.value = '';
         loadLearningLogs();
         
         // Update lessons learned count
@@ -870,8 +886,8 @@ async function sendMessage(message) {
         // Remove typing indicator
         removeTypingIndicator();
         
-        // Add bot response
-        addMessage('bot', data.response || data.fallback);
+        // Add bot response with the original question
+        addMessage('bot', data.response || data.fallback, message);
         
         // Save to conversation
         currentConversation.push({
@@ -892,7 +908,21 @@ async function sendMessage(message) {
     }
 }
 
-function addMessage(type, text) {
+// Function to convert URLs and markdown links to clickable HTML
+function makeLinksClickable(text) {
+    // First, handle markdown-style links [text](url)
+    text = text.replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color: #2c5aa0; text-decoration: underline;">$1</a>');
+    
+    // Then handle plain URLs that aren't already in anchor tags
+    text = text.replace(/(?<!href="|">)(https?:\/\/[^\s<]+)(?![^<]*<\/a>)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color: #2c5aa0; text-decoration: underline;">$1</a>');
+    
+    // Convert line breaks to <br> tags
+    text = text.replace(/\n/g, '<br>');
+    
+    return text;
+}
+
+function addMessage(type, text, userQuestion = null) {
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${type}`;
     
@@ -902,30 +932,61 @@ function addMessage(type, text) {
     if (type === 'user') {
         avatar.textContent = '👤';
     } else {
+        // Make bot avatar larger and interactive
+        avatar.classList.add('bot-avatar-large');
         const img = document.createElement('img');
         img.src = '/chofetz_chaim.svg';
         img.alt = 'Chofetz Chaim';
+        img.className = 'bot-avatar-img';
         img.style.width = '100%';
         img.style.height = '100%';
-        img.style.objectFit = 'contain';
+        img.style.objectFit = 'cover';
         avatar.appendChild(img);
     }
     
     const content = document.createElement('div');
     content.className = 'message-content';
-    content.textContent = text;
+    
+    // For bot messages, convert links to clickable HTML
+    if (type === 'bot') {
+        content.innerHTML = makeLinksClickable(text);
+    } else {
+        content.textContent = text;
+    }
+    
+    // Detect Hebrew text and apply RTL styling
+    const hebrewPattern = /[\u0590-\u05FF]/;
+    if (hebrewPattern.test(text)) {
+        content.style.direction = 'rtl';
+        content.style.textAlign = 'right';
+    }
     
     messageDiv.appendChild(avatar);
     messageDiv.appendChild(content);
     
-    // Add playback button for bot responses
+    // Add action buttons container for bot responses
     if (type === 'bot') {
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'message-actions';
+        actionsDiv.style.cssText = 'display: flex; gap: 8px; margin-top: 8px; margin-left: 100px; flex-wrap: wrap;';
+        
+        // Listen button
         const playbackBtn = document.createElement('button');
         playbackBtn.className = 'playback-btn';
         playbackBtn.innerHTML = '🔊 Listen';
         playbackBtn.setAttribute('aria-label', 'Listen to response');
         playbackBtn.onclick = () => playMessage(text, playbackBtn);
-        messageDiv.appendChild(playbackBtn);
+        actionsDiv.appendChild(playbackBtn);
+        
+        // Share button
+        const shareBtn = document.createElement('button');
+        shareBtn.className = 'share-message-btn';
+        shareBtn.innerHTML = '📤 Share';
+        shareBtn.setAttribute('aria-label', 'Share this response');
+        shareBtn.onclick = () => shareMessageContent(text, userQuestion);
+        actionsDiv.appendChild(shareBtn);
+        
+        messageDiv.appendChild(actionsDiv);
     }
     
     // Remove welcome message if exists
@@ -972,10 +1033,11 @@ function showTypingIndicator() {
     indicator.id = 'typingIndicator';
     
     const avatar = document.createElement('div');
-    avatar.className = 'message-avatar';
+    avatar.className = 'message-avatar bot-avatar-large';
     const img = document.createElement('img');
     img.src = '/chofetz_chaim.svg';
     img.alt = 'Chofetz Chaim';
+    img.className = 'bot-avatar-img';
     img.style.width = '100%';
     img.style.height = '100%';
     img.style.objectFit = 'contain';
@@ -996,6 +1058,161 @@ function removeTypingIndicator() {
     if (indicator) {
         indicator.remove();
     }
+}
+
+// Share message content without requiring account
+async function shareMessageContent(messageText, userQuestion = null) {
+    // Import translations
+    const { t, currentLanguage } = await import('./translations.js');
+    
+    // Build the complete share content
+    const disclaimer = `Important Notice ⚠️
+
+This chatbot is not a rabbi and should not be relied upon for final halachic decisions. If answers are unclear or if you have further questions, please consult a qualified rabbi or call:
+
+THE SHMIRAS HALOSHON SHAILA HOTLINE 📞
+
+Whether it is for a shidduch, a job referral, or just among family or friends, the wrong words can do irreparable harm. And sometimes, so can silence. Our Shaila Hotline puts you in contact with expert rabbonim so that before you speak, you can be sure.
+
+Hours: Evenings from 9:00 to 10:30 PM
+
+CALL: 718-951-3696 📞`;
+    
+    let fullShareContent = '';
+    
+    if (userQuestion) {
+        fullShareContent = `Question: ${userQuestion}\n\nAnswer from Chofetz Chaim:\n${messageText}\n\n---\n\n${disclaimer}\n\n🕊️ Chofetz Chaim App`;
+    } else {
+        fullShareContent = `Insight from Chofetz Chaim on Shmiras HaLashon:\n\n${messageText}\n\n---\n\n${disclaimer}\n\n🕊️ Chofetz Chaim App`;
+    }
+    
+    // Create share modal
+    const modal = document.createElement('div');
+    modal.className = 'share-modal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        padding: 20px;
+    `;
+    
+    const modalContent = document.createElement('div');
+    modalContent.style.cssText = `
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        max-width: 600px;
+        width: 100%;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    `;
+    
+    const shareTitle = currentLanguage === 'he' ? 'שתף תשובה זו' : 'Share This Response';
+    const shareSubtitle = currentLanguage === 'he' ? 
+        'בחר איך תרצה לשתף את התשובה מחפץ חיים' : 
+        'Choose how you want to share this response from Chofetz Chaim';
+    
+    // Build preview HTML
+    let previewHTML = '';
+    if (userQuestion) {
+        previewHTML = `
+            <div style="margin-bottom: 10px;">
+                <strong style="color: #2c5aa0;">Question:</strong>
+                <p style="margin: 5px 0; font-size: 0.9em; color: #333;">${userQuestion}</p>
+            </div>
+            <div style="margin-bottom: 10px;">
+                <strong style="color: #667eea;">Answer:</strong>
+                <p style="margin: 5px 0; font-size: 0.9em; color: #333;">${messageText}</p>
+            </div>
+        `;
+    } else {
+        previewHTML = `<p style="margin: 0; font-size: 0.9em;">${messageText}</p>`;
+    }
+    
+    modalContent.innerHTML = `
+        <h3 style="margin-top: 0; color: #2c5aa0; ${currentLanguage === 'he' ? 'direction: rtl; text-align: right;' : ''}">${shareTitle}</h3>
+        <p style="color: #666; margin-bottom: 20px; ${currentLanguage === 'he' ? 'direction: rtl; text-align: right;' : ''}">${shareSubtitle}</p>
+        
+        <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 20px; max-height: 300px; overflow-y: auto;">
+            ${previewHTML}
+            <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #ddd; font-size: 0.85em; color: #666;">
+                <strong>⚠️ Important Notice</strong>
+                <p style="margin: 5px 0;">This chatbot is not a rabbi. For halachic questions, consult a qualified rabbi or call:</p>
+                <p style="margin: 5px 0; color: #2c5aa0; font-weight: 600;">📞 THE SHMIRAS HALOSHON SHAILA HOTLINE<br>718-951-3696</p>
+                <p style="margin: 5px 0; font-size: 0.9em;">Hours: Evenings 9:00-10:30 PM</p>
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+            <button id="shareWhatsApp" style="padding: 12px; border: none; border-radius: 8px; background: #25D366; color: white; cursor: pointer; font-size: 14px; font-weight: 600;">
+                💬 WhatsApp
+            </button>
+            <button id="shareTwitter" style="padding: 12px; border: none; border-radius: 8px; background: #1DA1F2; color: white; cursor: pointer; font-size: 14px; font-weight: 600;">
+                🐦 Twitter
+            </button>
+            <button id="shareSMS" style="padding: 12px; border: none; border-radius: 8px; background: #34B7F1; color: white; cursor: pointer; font-size: 14px; font-weight: 600;">
+                📱 ${currentLanguage === 'he' ? 'הודעת טקסט' : 'Text'}
+            </button>
+            <button id="shareCopy" style="padding: 12px; border: none; border-radius: 8px; background: #6c757d; color: white; cursor: pointer; font-size: 14px; font-weight: 600;">
+                📋 ${currentLanguage === 'he' ? 'העתק' : 'Copy'}
+            </button>
+        </div>
+        
+        <button id="closeShareModal" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; background: white; color: #666; cursor: pointer; font-size: 14px; font-weight: 600;">
+            ${currentLanguage === 'he' ? 'סגור' : 'Close'}
+        </button>
+    `;
+    
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+    
+    // Add event listeners
+    document.getElementById('shareWhatsApp').onclick = () => {
+        const url = `https://wa.me/?text=${encodeURIComponent(fullShareContent)}`;
+        window.open(url, '_blank');
+        modal.remove();
+    };
+    
+    document.getElementById('shareTwitter').onclick = () => {
+        // Twitter has character limits, so share a shorter version
+        const twitterText = userQuestion ? 
+            `Q: ${userQuestion}\n\nA: ${messageText}\n\n📞 For halachic questions: 718-951-3696\n🕊️ Chofetz Chaim App` :
+            `${messageText}\n\n📞 Shmiras Haloshon Hotline: 718-951-3696\n🕊️ Chofetz Chaim App`;
+        const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(twitterText)}`;
+        window.open(url, '_blank');
+        modal.remove();
+    };
+    
+    document.getElementById('shareSMS').onclick = () => {
+        const url = `sms:?&body=${encodeURIComponent(fullShareContent)}`;
+        window.location.href = url;
+        modal.remove();
+    };
+    
+    document.getElementById('shareCopy').onclick = async () => {
+        try {
+            await navigator.clipboard.writeText(fullShareContent);
+            const copyBtn = document.getElementById('shareCopy');
+            copyBtn.innerHTML = currentLanguage === 'he' ? '✓ הועתק!' : '✓ Copied!';
+            copyBtn.style.background = '#28a745';
+            setTimeout(() => modal.remove(), 1500);
+        } catch (err) {
+            alert(currentLanguage === 'he' ? 'שגיאה בהעתקה' : 'Failed to copy');
+        }
+    };
+    
+    document.getElementById('closeShareModal').onclick = () => modal.remove();
+    modal.onclick = (e) => {
+        if (e.target === modal) modal.remove();
+    };
 }
 
 // Daily encouragement
