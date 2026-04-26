@@ -1,5 +1,5 @@
 import express from 'express';
-import { generateChofetzChaimResponse, generateDailyEncouragement } from '../services/chofetzChaimBot.js';
+import { generateChofetzChaimResponse, generateDailyEncouragement, analyzeSpeechScenario } from '../services/chofetzChaimBot.js';
 
 const router = express.Router();
 
@@ -56,6 +56,38 @@ router.get('/chofetz-chaim/daily-encouragement', async (req: any, res: any) => {
     res.status(500).json({ 
       error: 'Failed to generate encouragement',
       fallback: `Good morning! Today is a beautiful opportunity to practice Shmiras HaLashon. May your words bring only blessing and light to the world, in honor of my brother Yosef Yisroel Meyer, who embodies the teachings of the Chofetz Chaim.`
+    });
+  }
+});
+
+// Route for Speech Lab analysis
+router.post('/chofetz-chaim/speech-lab', async (req: any, res: any) => {
+  try {
+    const { statement, context, language } = req.body;
+
+    if (!statement || typeof statement !== 'string') {
+      return res.status(400).json({
+        error: 'Statement is required and must be a string'
+      });
+    }
+
+    const result = await analyzeSpeechScenario(statement.trim(), context || '', language || 'en');
+
+    res.json({
+      ...result,
+      timestamp: new Date().toISOString(),
+      type: 'speech-lab-analysis'
+    });
+  } catch (error) {
+    console.error('❌ Error in Speech Lab analysis:', error);
+    res.status(500).json({
+      error: 'Failed to analyze speech scenario',
+      fallback: {
+        riskLevel: 'caution',
+        reason: 'Unable to evaluate this right now. Please proceed carefully.',
+        saferRewrite: 'Let me share this in a way that protects dignity and avoids harm.',
+        actionStep: 'Pause and consult a qualified rabbi if this is halachically sensitive.'
+      }
     });
   }
 });

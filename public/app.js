@@ -1,13 +1,45 @@
-import { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, collection, addDoc, getDocs, query, where, orderBy, serverTimestamp, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, limit } from './firebase-config.js';
-import { initDailyLessons } from './daily-lessons.js';
-import { switchLanguage, updateUILanguage, currentLanguage } from './translations.js';
-import { initVideoStreaming } from './video-streaming.js';
-import { initChizukVideos } from './chizuk-videos.js';
+import { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, collection, addDoc, getDocs, query, where, orderBy, serverTimestamp, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, limit } from './firebase-config.js?v=20260426c';
+import { initDailyLessons } from './daily-lessons.js?v=20260426c';
+import { initGoals } from './goals.js?v=20260426c';
+import { t, switchLanguage, updateUILanguage, currentLanguage } from './translations.js?v=20260426c';
+import { initVideoStreaming } from './video-streaming.js?v=20260426c';
+import { initChizukVideos } from './chizuk-videos.js?v=20260426c';
 
 // State management
 let currentUser = null;
+
+/** Local-only profile when not signed in (missions, timer, weekly goal, guest logs) */
+const GUEST_STORAGE_ID = 'guest';
+
+function getStorageUserId() {
+    return currentUser ? currentUser.id : GUEST_STORAGE_ID;
+}
 let conversations = [];
 let currentConversation = [];
+let focusTimerInterval = null;
+const weeklyGoalTarget = 500;
+const dailyMissions = [
+    {
+        title: { en: 'Pause before your first hard response today.', he: 'עצרו לפני התגובה הקשה הראשונה שלכם היום.' },
+        description: { en: 'When tension rises, take one deep breath and answer with calm words.', he: 'כשעולה מתח, קחו נשימה עמוקה וענו במילים רגועות.' }
+    },
+    {
+        title: { en: 'Practice dan l\'kaf zechut one time.', he: 'תרגלו דין לכף זכות פעם אחת היום.' },
+        description: { en: 'Reframe one frustrating moment by judging the other person favorably.', he: 'קחו רגע מתסכל אחד ונסו לראות את הצד הטוב של האחר.' }
+    },
+    {
+        title: { en: 'Replace one complaint with gratitude.', he: 'החליפו תלונה אחת בהכרת הטוב.' },
+        description: { en: 'Turn one negative sentence into a sentence of thanks.', he: 'הפכו משפט שלילי אחד למשפט של הודיה.' }
+    },
+    {
+        title: { en: 'Guard a private detail someone shared with you.', he: 'שמרו סוד אישי שמישהו שיתף אתכם.' },
+        description: { en: 'Choose trust over sharing, even if the story feels interesting.', he: 'בחרו באמון במקום שיתוף, גם אם הסיפור מעניין.' }
+    },
+    {
+        title: { en: 'Speak encouragement to one person today.', he: 'אמרו מילות חיזוק לאדם אחד היום.' },
+        description: { en: 'Offer sincere positive words that strengthen someone else.', he: 'תנו מילים כנות וחיוביות שמחזקות אדם אחר.' }
+    }
+];
 
 // DOM Elements
 const authModal = document.getElementById('authModal');
@@ -53,6 +85,8 @@ document.addEventListener('DOMContentLoaded', () => {
     loadDailyEncouragement();
     initDailyLessons();
     initVoiceRecognition();
+    initLogoAssistant();
+    initGoals();
     
     // Listen for auth state changes
     onAuthStateChanged(auth, (user) => {
@@ -66,8 +100,15 @@ document.addEventListener('DOMContentLoaded', () => {
             showApp();
         } else {
             currentUser = null;
-            showAuth();
+            showGuestApp();
         }
+    });
+
+    document.getElementById('openSignInBtn').addEventListener('click', () => openAuthModal('login'));
+    document.getElementById('openSignUpBtn').addEventListener('click', () => openAuthModal('signup'));
+    document.getElementById('closeAuthModal').addEventListener('click', () => closeAuthModal());
+    authModal.addEventListener('click', (e) => {
+        if (e.target === authModal) closeAuthModal();
     });
 });
 
@@ -77,16 +118,50 @@ function checkAuth() {
     return;
 }
 
-function showAuth() {
+function openAuthModal(tab = 'login') {
     authModal.classList.remove('hidden');
-    appContainer.classList.add('hidden');
+    switchAuthTab(tab);
+}
+
+function closeAuthModal() {
+    authModal.classList.add('hidden');
+    hideError();
+}
+
+function setHeaderAuthMode(loggedIn) {
+    const guestBar = document.getElementById('guestAuthBar');
+    const userWrap = document.getElementById('userMenuWrapper');
+    if (guestBar) guestBar.classList.toggle('hidden', loggedIn);
+    if (userWrap) userWrap.classList.toggle('hidden', !loggedIn);
+}
+
+function showGuestApp() {
+    stopFocusTimer();
+    closeAuthModal();
+    appContainer.classList.remove('hidden');
+    setHeaderAuthMode(false);
+    loadGuestLocalData();
+    initEpicExperience();
 }
 
 function showApp() {
-    authModal.classList.add('hidden');
+    closeAuthModal();
     appContainer.classList.remove('hidden');
+    setHeaderAuthMode(true);
     userName.textContent = currentUser.name;
+    initEpicExperience();
     loadUserData();
+}
+
+function loadGuestLocalData() {
+    try {
+        conversations = JSON.parse(localStorage.getItem('guestConversations') || '[]');
+    } catch (error) {
+        conversations = [];
+    }
+    currentConversation = [];
+    loadCompletedLessons();
+    loadLearningLogs();
 }
 
 // Event Listeners
@@ -157,6 +232,9 @@ function setupEventListeners() {
     });
 
     document.getElementById('logoutBtn').addEventListener('click', logout);
+    document.getElementById('dedicationBtn').addEventListener('click', () => {
+        window.location.href = '/dedication.html';
+    });
     document.getElementById('dashboardBtn').addEventListener('click', showDashboard);
 
     // Dashboard tabs
@@ -222,6 +300,54 @@ function setupEventListeners() {
     if (postShareBtn) {
         postShareBtn.addEventListener('click', postToCommunity);
     }
+    const completeMissionBtn = document.getElementById('completeMissionBtn');
+    if (completeMissionBtn) {
+        completeMissionBtn.addEventListener('click', completeDailyMission);
+    }
+    const refreshMissionBtn = document.getElementById('refreshMissionBtn');
+    if (refreshMissionBtn) {
+        refreshMissionBtn.addEventListener('click', () => setDailyMission(true));
+    }
+    const saveReflectionBtn = document.getElementById('saveReflectionBtn');
+    if (saveReflectionBtn) {
+        saveReflectionBtn.addEventListener('click', saveMissionReflection);
+    }
+    const shareMissionWhatsAppBtn = document.getElementById('shareMissionWhatsAppBtn');
+    if (shareMissionWhatsAppBtn) {
+        shareMissionWhatsAppBtn.addEventListener('click', () => shareDailyMission('whatsapp'));
+    }
+    const shareMissionEmailBtn = document.getElementById('shareMissionEmailBtn');
+    if (shareMissionEmailBtn) {
+        shareMissionEmailBtn.addEventListener('click', () => shareDailyMission('email'));
+    }
+    const shareMissionTextBtn = document.getElementById('shareMissionTextBtn');
+    if (shareMissionTextBtn) {
+        shareMissionTextBtn.addEventListener('click', () => shareDailyMission('text'));
+    }
+    const analyzeSpeechBtn = document.getElementById('analyzeSpeechBtn');
+    if (analyzeSpeechBtn) {
+        analyzeSpeechBtn.addEventListener('click', analyzeSpeechLabInput);
+    }
+    const copyRewriteBtn = document.getElementById('copyRewriteBtn');
+    if (copyRewriteBtn) {
+        copyRewriteBtn.addEventListener('click', copySpeechRewrite);
+    }
+    const sendRewriteToCommunityBtn = document.getElementById('sendRewriteToCommunityBtn');
+    if (sendRewriteToCommunityBtn) {
+        sendRewriteToCommunityBtn.addEventListener('click', sendSpeechRewriteToCommunity);
+    }
+    const shareRewriteWhatsAppBtn = document.getElementById('shareRewriteWhatsAppBtn');
+    if (shareRewriteWhatsAppBtn) {
+        shareRewriteWhatsAppBtn.addEventListener('click', () => shareSpeechRewrite('whatsapp'));
+    }
+    const shareRewriteEmailBtn = document.getElementById('shareRewriteEmailBtn');
+    if (shareRewriteEmailBtn) {
+        shareRewriteEmailBtn.addEventListener('click', () => shareSpeechRewrite('email'));
+    }
+    const shareRewriteTextBtn = document.getElementById('shareRewriteTextBtn');
+    if (shareRewriteTextBtn) {
+        shareRewriteTextBtn.addEventListener('click', () => shareSpeechRewrite('text'));
+    }
 
     const shareInput = document.getElementById('shareInput');
     if (shareInput) {
@@ -229,6 +355,50 @@ function setupEventListeners() {
             document.getElementById('charCount').textContent = e.target.value.length;
         });
     }
+
+    document.querySelectorAll('.prompt-chip').forEach((chip) => {
+        chip.addEventListener('click', (event) => {
+            if (!shareInput) return;
+            const prompt = currentLanguage === 'he'
+                ? event.currentTarget.dataset.promptHe
+                : event.currentTarget.dataset.promptEn;
+            if (!prompt) return;
+            shareInput.value = prompt;
+            document.getElementById('charCount').textContent = prompt.length;
+            shareInput.focus();
+        });
+    });
+
+    const shareTwitterBtn = document.getElementById('shareTwitterBtn');
+    if (shareTwitterBtn) shareTwitterBtn.addEventListener('click', () => shareProgress('twitter'));
+    const shareWhatsAppBtn = document.getElementById('shareWhatsAppBtn');
+    if (shareWhatsAppBtn) shareWhatsAppBtn.addEventListener('click', () => shareProgress('whatsapp'));
+    const shareEmailBtn = document.getElementById('shareEmailBtn');
+    if (shareEmailBtn) shareEmailBtn.addEventListener('click', () => shareProgress('email'));
+    const shareTextBtn = document.getElementById('shareTextBtn');
+    if (shareTextBtn) shareTextBtn.addEventListener('click', () => shareProgress('text'));
+    const copyLinkBtn = document.getElementById('copyLinkBtn');
+    if (copyLinkBtn) copyLinkBtn.addEventListener('click', copyProgressShareText);
+    const exportDataBtn = document.getElementById('exportDataBtn');
+    if (exportDataBtn) exportDataBtn.addEventListener('click', exportUserData);
+    const focusStartPauseBtn = document.getElementById('focusStartPauseBtn');
+    if (focusStartPauseBtn) focusStartPauseBtn.addEventListener('click', toggleFocusTimer);
+    const focusResetBtn = document.getElementById('focusResetBtn');
+    if (focusResetBtn) focusResetBtn.addEventListener('click', resetFocusTimerToday);
+    const focusExpandBtn = document.getElementById('focusExpandBtn');
+    if (focusExpandBtn) focusExpandBtn.addEventListener('click', expandFocusGoal);
+    const shareFocusWhatsAppBtn = document.getElementById('shareFocusWhatsAppBtn');
+    if (shareFocusWhatsAppBtn) shareFocusWhatsAppBtn.addEventListener('click', () => shareFocusTimer('whatsapp'));
+    const shareFocusEmailBtn = document.getElementById('shareFocusEmailBtn');
+    if (shareFocusEmailBtn) shareFocusEmailBtn.addEventListener('click', () => shareFocusTimer('email'));
+    const shareFocusTextBtn = document.getElementById('shareFocusTextBtn');
+    if (shareFocusTextBtn) shareFocusTextBtn.addEventListener('click', () => shareFocusTimer('text'));
+    const saveBuddyBtn = document.getElementById('saveBuddyBtn');
+    if (saveBuddyBtn) saveBuddyBtn.addEventListener('click', saveBuddyProfile);
+    const sendBuddyNudgeBtn = document.getElementById('sendBuddyNudgeBtn');
+    if (sendBuddyNudgeBtn) sendBuddyNudgeBtn.addEventListener('click', () => sendBuddyMotivation('whatsapp'));
+    const copyBuddyMessageBtn = document.getElementById('copyBuddyMessageBtn');
+    if (copyBuddyMessageBtn) copyBuddyMessageBtn.addEventListener('click', copyBuddyMotivationMessage);
 
     // Feed filter buttons
     document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -284,6 +454,13 @@ function setupEventListeners() {
 
     // Live Chat event listeners
     setupLiveChatListeners();
+    document.addEventListener('languageChanged', () => {
+        setDailyMission(false);
+        updateWeeklyGoalProgress();
+        updateMiddosMap();
+        renderSpeechLabLastResult();
+        renderFocusTimerState();
+    });
 }
 
 function setupLiveChatListeners() {
@@ -510,7 +687,27 @@ async function addLearningLog() {
         return;
     }
     
-    if (!currentUser) return;
+    if (!currentUser) {
+        try {
+            const logs = JSON.parse(localStorage.getItem('guestLearningLogs') || '[]');
+            logs.unshift({
+                id: 'g_' + Date.now(),
+                content: finalLogText,
+                sefariaSection: selectedSection || null,
+                createdAt: new Date().toISOString()
+            });
+            localStorage.setItem('guestLearningLogs', JSON.stringify(logs));
+            logInput.value = '';
+            if (sefariaSection) sefariaSection.value = '';
+            loadLearningLogs();
+            updateMiddosMap();
+            alert(t('guestSavedLocally'));
+        } catch (error) {
+            console.error('Error saving guest learning log:', error);
+            alert('Failed to save. Please try again.');
+        }
+        return;
+    }
     
     try {
         const logEntry = {
@@ -538,7 +735,26 @@ async function addLearningLog() {
 }
 
 async function loadLearningLogs() {
-    if (!currentUser) return;
+    const logsList = document.getElementById('learningLogList');
+    if (!logsList) return;
+
+    if (!currentUser) {
+        let logs = [];
+        try {
+            logs = JSON.parse(localStorage.getItem('guestLearningLogs') || '[]');
+        } catch (error) {
+            logs = [];
+        }
+        if (logs.length === 0) {
+            logsList.innerHTML = `<p class="empty-state">${currentLanguage === 'he' ? 'רשומות הלמידה שלך יופיעו כאן' : 'Your learning entries will appear here'}</p>`;
+            return;
+        }
+        logsList.innerHTML = '';
+        logs.forEach((log) => {
+            logsList.appendChild(createGuestLogElement(log));
+        });
+        return;
+    }
     
     try {
         const logsQuery = query(
@@ -548,7 +764,6 @@ async function loadLearningLogs() {
         );
         
         const querySnapshot = await getDocs(logsQuery);
-        const logsList = document.getElementById('learningLogList');
         
         if (querySnapshot.empty) {
             logsList.innerHTML = '<p class="empty-state">Your learning entries will appear here</p>';
@@ -603,9 +818,66 @@ function createLogElement(logId, log) {
     return div;
 }
 
+function createGuestLogElement(log) {
+    const div = document.createElement('div');
+    div.className = 'log-entry';
+
+    const date = log.createdAt
+        ? new Date(log.createdAt).toLocaleDateString(currentLanguage === 'he' ? 'he-IL' : 'en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        })
+        : 'Just now';
+
+    div.innerHTML = `
+        <div class="log-entry-header">
+            <span class="log-entry-date">📅 ${date}</span>
+            <button class="log-entry-delete" data-guest-log-id="${log.id}" type="button">🗑️</button>
+        </div>
+        <div class="log-entry-content">${escapeHtml(log.content || '')}</div>
+    `;
+
+    div.querySelector('.log-entry-delete').addEventListener('click', async () => {
+        if (!confirm(currentLanguage === 'he' ? 'למחוק רשומה זו?' : 'Delete this learning log entry?')) return;
+        let logs = JSON.parse(localStorage.getItem('guestLearningLogs') || '[]');
+        logs = logs.filter((l) => l.id !== log.id);
+        localStorage.setItem('guestLearningLogs', JSON.stringify(logs));
+        loadLearningLogs();
+    });
+
+    return div;
+}
+
 // Load and display completed lessons
 async function loadCompletedLessons() {
-    if (!currentUser) return;
+    if (!currentUser) {
+        let completedLessons = [];
+        try {
+            completedLessons = JSON.parse(localStorage.getItem('guestCompletedLessons') || '[]');
+        } catch (error) {
+            completedLessons = [];
+        }
+        const lessonsEl = document.getElementById('lessonsLearned');
+        if (lessonsEl) lessonsEl.textContent = completedLessons.length;
+        const completedList = document.getElementById('completedLessonsList');
+        if (!completedList) return;
+        if (completedLessons.length === 0) {
+            completedList.innerHTML = '<p class="empty-state">Complete lessons to see them here!</p>';
+            return;
+        }
+        const sortedLessons = [...completedLessons].sort((a, b) => a - b);
+        completedList.innerHTML = sortedLessons.map(day => `
+            <div class="completed-lesson-badge">
+                <div class="day-number">✓</div>
+                <div class="day-label">Day ${day}</div>
+            </div>
+        `).join('');
+        updateMiddosMap();
+        return;
+    }
     
     try {
         const userRef = doc(db, 'users', currentUser.id);
@@ -632,6 +904,7 @@ async function loadCompletedLessons() {
                 <div class="day-label">Day ${day}</div>
             </div>
         `).join('');
+        updateMiddosMap();
         
     } catch (error) {
         console.error('Error loading completed lessons:', error);
@@ -645,8 +918,6 @@ window.addEventListener('lessonCompleted', () => {
 
 // Community Feed Functions
 async function loadCommunityFeed(filter = 'all') {
-    if (!currentUser) return;
-    
     try {
         const feedList = document.getElementById('communityFeedList');
         feedList.innerHTML = '<div class="loading-spinner">Loading community updates...</div>';
@@ -706,7 +977,10 @@ async function loadCommunityFeed(filter = 'all') {
 }
 
 async function postToCommunity() {
-    if (!currentUser) return;
+    if (!currentUser) {
+        alert(t('signInToPost'));
+        return;
+    }
     
     const shareInput = document.getElementById('shareInput');
     const content = shareInput.value.trim();
@@ -730,6 +1004,8 @@ async function postToCommunity() {
         
         // Reload feed
         loadCommunityFeed();
+        updateWeeklyGoalProgress(1);
+        updateMiddosMap();
         
         alert('✓ Shared successfully!');
         
@@ -780,6 +1056,609 @@ function getTimeAgo(date) {
     if (interval > 1) return Math.floor(interval) + ' minutes ago';
     
     return 'Just now';
+}
+
+function getMissionStorageKey() {
+    return `missionState_${getStorageUserId()}`;
+}
+
+function initEpicExperience() {
+    setDailyMission(false);
+    updateWeeklyGoalProgress();
+    updateMiddosMap();
+    renderFocusTimerState();
+    renderBuddyState();
+}
+
+function getFocusTimerKey() {
+    return `focusTimer_${getStorageUserId()}`;
+}
+
+function getBuddyKey() {
+    return `focusBuddy_${getStorageUserId()}`;
+}
+
+function getDefaultFocusTimerState() {
+    return {
+        date: new Date().toDateString(),
+        targetMinutes: 60,
+        elapsedSeconds: 0,
+        completedToday: false,
+        completedDays: 0,
+        expansions: 0
+    };
+}
+
+function loadFocusTimerState() {
+    const key = getFocusTimerKey();
+    if (!key) return getDefaultFocusTimerState();
+
+    let state = null;
+    try {
+        state = JSON.parse(localStorage.getItem(key) || 'null');
+    } catch (error) {
+        state = null;
+    }
+    if (!state) state = getDefaultFocusTimerState();
+
+    const today = new Date().toDateString();
+    if (state.date !== today) {
+        state.date = today;
+        state.elapsedSeconds = 0;
+        state.completedToday = false;
+    }
+    return state;
+}
+
+function saveFocusTimerState(state) {
+    const key = getFocusTimerKey();
+    if (!key) return;
+    localStorage.setItem(key, JSON.stringify(state));
+}
+
+function formatDuration(seconds) {
+    const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
+    const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+    const s = String(seconds % 60).padStart(2, '0');
+    return `${h}:${m}:${s}`;
+}
+
+function getExpandRequirement(expansions) {
+    return (expansions + 1) * 3;
+}
+
+function renderFocusTimerState() {
+    const state = loadFocusTimerState();
+    saveFocusTimerState(state);
+
+    const targetEl = document.getElementById('focusTargetText');
+    const elapsedEl = document.getElementById('focusElapsedText');
+    const completedDaysEl = document.getElementById('focusCompletedDaysText');
+    const statusEl = document.getElementById('focusTimerStatus');
+    const startPauseBtn = document.getElementById('focusStartPauseBtn');
+    const expandBtn = document.getElementById('focusExpandBtn');
+    if (!targetEl || !elapsedEl || !completedDaysEl || !statusEl || !startPauseBtn || !expandBtn) return;
+
+    targetEl.textContent = `${state.targetMinutes} ${currentLanguage === 'he' ? 'דקות' : 'min'}`;
+    elapsedEl.textContent = formatDuration(state.elapsedSeconds);
+    completedDaysEl.textContent = String(state.completedDays);
+    startPauseBtn.textContent = focusTimerInterval ? t('focusPauseBtn') : t('focusStartBtn');
+
+    const requirement = getExpandRequirement(state.expansions);
+    const canExpand = state.completedDays >= requirement && state.targetMinutes < 180;
+    expandBtn.disabled = !canExpand;
+
+    if (state.targetMinutes >= 180) {
+        statusEl.textContent = currentLanguage === 'he'
+            ? 'הגעת ליעד המקסימלי של 180 דקות ליום. כל הכבוד!'
+            : 'You reached the max daily goal of 180 minutes. Incredible consistency!';
+    } else if (canExpand) {
+        statusEl.textContent = currentLanguage === 'he'
+            ? 'פתחת הרחבה! אפשר להגדיל את היעד היומי ב-15 דקות.'
+            : 'Expansion unlocked! You can increase the daily goal by 15 minutes.';
+    } else {
+        const remaining = Math.max(0, requirement - state.completedDays);
+        statusEl.textContent = currentLanguage === 'he'
+            ? `השלימו עוד ${remaining} ימים כדי לפתוח הרחבה של 15 דקות.`
+            : `Complete ${remaining} more days to unlock a +15 minute expansion.`;
+    }
+}
+
+function stopFocusTimer() {
+    if (focusTimerInterval) {
+        clearInterval(focusTimerInterval);
+        focusTimerInterval = null;
+    }
+}
+
+function toggleFocusTimer() {
+    if (focusTimerInterval) {
+        stopFocusTimer();
+        renderFocusTimerState();
+        return;
+    }
+
+    focusTimerInterval = setInterval(() => {
+        const state = loadFocusTimerState();
+        state.elapsedSeconds += 1;
+
+        if (!state.completedToday && state.elapsedSeconds >= state.targetMinutes * 60) {
+            state.completedToday = true;
+            state.completedDays += 1;
+            updateWeeklyGoalProgress(1);
+        }
+
+        saveFocusTimerState(state);
+        renderFocusTimerState();
+    }, 1000);
+
+    renderFocusTimerState();
+}
+
+function resetFocusTimerToday() {
+    const state = loadFocusTimerState();
+    state.elapsedSeconds = 0;
+    state.completedToday = false;
+    saveFocusTimerState(state);
+    stopFocusTimer();
+    renderFocusTimerState();
+}
+
+function expandFocusGoal() {
+    const state = loadFocusTimerState();
+    const requirement = getExpandRequirement(state.expansions);
+    if (state.completedDays < requirement || state.targetMinutes >= 180) {
+        return;
+    }
+    state.targetMinutes = Math.min(180, state.targetMinutes + 15);
+    state.expansions += 1;
+    saveFocusTimerState(state);
+    renderFocusTimerState();
+}
+
+function loadBuddyState() {
+    try {
+        return JSON.parse(localStorage.getItem(getBuddyKey()) || 'null') || { name: '', contact: '' };
+    } catch (error) {
+        return { name: '', contact: '' };
+    }
+}
+
+function renderBuddyState() {
+    const buddy = loadBuddyState();
+    const nameInput = document.getElementById('buddyNameInput');
+    const contactInput = document.getElementById('buddyContactInput');
+    if (nameInput) nameInput.value = buddy.name || '';
+    if (contactInput) contactInput.value = buddy.contact || '';
+}
+
+function saveBuddyProfile() {
+    const nameInput = document.getElementById('buddyNameInput');
+    const contactInput = document.getElementById('buddyContactInput');
+    const statusEl = document.getElementById('buddyStatus');
+    if (!nameInput || !contactInput) return;
+
+    const buddy = {
+        name: nameInput.value.trim(),
+        contact: contactInput.value.trim()
+    };
+
+    localStorage.setItem(getBuddyKey(), JSON.stringify(buddy));
+    if (statusEl) statusEl.textContent = t('buddySaved');
+}
+
+function getFocusShareMessage() {
+    const state = loadFocusTimerState();
+    const completion = state.completedToday
+        ? (currentLanguage === 'he' ? '✅ היעד היומי הושלם' : '✅ Daily goal completed')
+        : (currentLanguage === 'he' ? '🕊️ עדיין בתהליך' : '🕊️ Still in progress');
+
+    return currentLanguage === 'he'
+        ? `טיימר שמירת הלשון שלי:\nיעד יומי: ${state.targetMinutes} דקות\nזמן היום: ${formatDuration(state.elapsedSeconds)}\nימים שהושלמו: ${state.completedDays}\n${completion}`
+        : `My Shmiras HaLashon focus timer:\nDaily goal: ${state.targetMinutes} minutes\nToday's time: ${formatDuration(state.elapsedSeconds)}\nCompleted days: ${state.completedDays}\n${completion}`;
+}
+
+function shareFocusTimer(channel) {
+    const message = getFocusShareMessage();
+    const encoded = encodeURIComponent(message);
+    if (channel === 'whatsapp') window.open(`https://wa.me/?text=${encoded}`, '_blank');
+    if (channel === 'email') window.location.href = `mailto:?subject=${encodeURIComponent(currentLanguage === 'he' ? 'טיימר שמירת הלשון שלי' : 'My Shmiras HaLashon Focus Timer')}&body=${encoded}`;
+    if (channel === 'text') window.location.href = `sms:?&body=${encoded}`;
+}
+
+function getBuddyMotivationMessage() {
+    const buddy = loadBuddyState();
+    const state = loadFocusTimerState();
+    const buddyName = buddy.name || (currentLanguage === 'he' ? 'חבר יקר' : 'my friend');
+    return currentLanguage === 'he'
+        ? `${buddyName}, בוא/י נתחזק יחד בשמירת הלשון היום! אני כרגע על ${formatDuration(state.elapsedSeconds)} מתוך יעד יומי של ${state.targetMinutes} דקות.`
+        : `${buddyName}, let's keep each other strong in Shmiras HaLashon today! I am currently at ${formatDuration(state.elapsedSeconds)} toward a ${state.targetMinutes}-minute daily goal.`;
+}
+
+function sendBuddyMotivation(channel = 'whatsapp') {
+    const buddy = loadBuddyState();
+    const statusEl = document.getElementById('buddyStatus');
+    if (!buddy.name) {
+        if (statusEl) statusEl.textContent = t('buddyNeedName');
+        return;
+    }
+    const message = getBuddyMotivationMessage();
+    const encoded = encodeURIComponent(message);
+    if (channel === 'whatsapp') window.open(`https://wa.me/?text=${encoded}`, '_blank');
+    if (channel === 'email') window.location.href = `mailto:?subject=${encodeURIComponent(currentLanguage === 'he' ? 'עידוד לשמירת הלשון' : 'Shmiras HaLashon motivation')}&body=${encoded}`;
+    if (channel === 'text') window.location.href = `sms:?&body=${encoded}`;
+}
+
+async function copyBuddyMotivationMessage() {
+    const statusEl = document.getElementById('buddyStatus');
+    const buddy = loadBuddyState();
+    if (!buddy.name) {
+        if (statusEl) statusEl.textContent = t('buddyNeedName');
+        return;
+    }
+    try {
+        await navigator.clipboard.writeText(getBuddyMotivationMessage());
+        if (statusEl) statusEl.textContent = t('buddyMessageCopied');
+    } catch (error) {
+        if (statusEl) statusEl.textContent = currentLanguage === 'he' ? 'שגיאה בהעתקה.' : 'Copy failed.';
+    }
+}
+
+function setDailyMission(forceNew = false) {
+    const key = getMissionStorageKey();
+
+    const today = new Date().toDateString();
+    let missionState = null;
+
+    try {
+        missionState = JSON.parse(localStorage.getItem(key) || 'null');
+    } catch (error) {
+        missionState = null;
+    }
+
+    if (!missionState || missionState.date !== today || forceNew) {
+        const mission = dailyMissions[Math.floor(Math.random() * dailyMissions.length)];
+        missionState = {
+            date: today,
+            title: mission.title,
+            description: mission.description,
+            completed: false,
+            reflection: ''
+        };
+        localStorage.setItem(key, JSON.stringify(missionState));
+    }
+
+    renderMissionState(missionState);
+}
+
+function renderMissionState(missionState) {
+    const titleEl = document.getElementById('dailyMissionTitle');
+    const descEl = document.getElementById('dailyMissionDescription');
+    const statusEl = document.getElementById('missionStatus');
+    const reflectionEl = document.getElementById('missionReflectionInput');
+    const completeBtn = document.getElementById('completeMissionBtn');
+
+    if (!titleEl || !descEl || !statusEl || !reflectionEl || !completeBtn) return;
+
+    titleEl.textContent = typeof missionState.title === 'string'
+        ? missionState.title
+        : missionState.title[currentLanguage] || missionState.title.en;
+    descEl.textContent = typeof missionState.description === 'string'
+        ? missionState.description
+        : missionState.description[currentLanguage] || missionState.description.en;
+    reflectionEl.value = missionState.reflection || '';
+    statusEl.textContent = missionState.completed
+        ? (currentLanguage === 'he' ? 'עבודה מדהימה - המשימה הושלמה להיום!' : 'Amazing work - mission complete for today!')
+        : '';
+    completeBtn.textContent = missionState.completed
+        ? (currentLanguage === 'he' ? '✅ הושלם להיום' : '✅ Completed Today')
+        : t('missionCompleteBtn');
+}
+
+function completeDailyMission() {
+    const key = getMissionStorageKey();
+
+    const missionState = JSON.parse(localStorage.getItem(key) || 'null');
+    if (!missionState) return;
+
+    missionState.completed = true;
+    localStorage.setItem(key, JSON.stringify(missionState));
+    renderMissionState(missionState);
+
+    const streakEl = document.getElementById('streakDays');
+    if (streakEl) {
+        streakEl.textContent = String(Math.max(parseInt(streakEl.textContent || '0', 10), calculateStreak()) + 1);
+    }
+
+    updateWeeklyGoalProgress(1);
+    updateMiddosMap();
+}
+
+function saveMissionReflection() {
+    const key = getMissionStorageKey();
+    const reflectionEl = document.getElementById('missionReflectionInput');
+    const statusEl = document.getElementById('missionStatus');
+    if (!key || !reflectionEl || !statusEl) return;
+
+    const missionState = JSON.parse(localStorage.getItem(key) || 'null');
+    if (!missionState) return;
+
+    missionState.reflection = reflectionEl.value.trim();
+    localStorage.setItem(key, JSON.stringify(missionState));
+    statusEl.textContent = missionState.reflection
+        ? (currentLanguage === 'he' ? 'המחשבה נשמרה. המשיכו לצמוח.' : 'Reflection saved. Keep growing.')
+        : '';
+}
+
+function shareDailyMission(channel) {
+    const key = getMissionStorageKey();
+
+    const missionState = JSON.parse(localStorage.getItem(key) || 'null');
+    if (!missionState) return;
+
+    const title = typeof missionState.title === 'string'
+        ? missionState.title
+        : missionState.title[currentLanguage] || missionState.title.en;
+    const description = typeof missionState.description === 'string'
+        ? missionState.description
+        : missionState.description[currentLanguage] || missionState.description.en;
+    const reflection = missionState.reflection ? `\n${currentLanguage === 'he' ? 'מחשבה:' : 'Reflection:'} ${missionState.reflection}` : '';
+    const completionText = missionState.completed
+        ? (currentLanguage === 'he' ? '✅ הושלם להיום' : '✅ Completed today')
+        : (currentLanguage === 'he' ? '🕊️ עדיין בתהליך' : '🕊️ In progress');
+
+    const message = currentLanguage === 'he'
+        ? `המשימה היומית שלי בשמירת הלשון:\n${title}\n${description}\n${completionText}${reflection}`
+        : `My daily Shmiras HaLashon mission:\n${title}\n${description}\n${completionText}${reflection}`;
+
+    const encoded = encodeURIComponent(message);
+    if (channel === 'whatsapp') window.open(`https://wa.me/?text=${encoded}`, '_blank');
+    if (channel === 'email') window.location.href = `mailto:?subject=${encodeURIComponent(currentLanguage === 'he' ? 'המשימה היומית שלי' : 'My Daily Mission')}&body=${encoded}`;
+    if (channel === 'text') window.location.href = `sms:?&body=${encoded}`;
+}
+
+function updateWeeklyGoalProgress(increment = 0) {
+    const bar = document.getElementById('weeklyGoalProgressBar');
+    const text = document.getElementById('weeklyGoalProgressText');
+    if (!bar || !text) return;
+
+    const key = `weeklyGoal_${getStorageUserId()}`;
+    const weekStart = getWeekStartDateString();
+    let state = null;
+    try {
+        state = JSON.parse(localStorage.getItem(key) || 'null');
+    } catch (error) {
+        state = null;
+    }
+
+    if (!state || state.weekStart !== weekStart) {
+        state = { weekStart, progress: 0 };
+    }
+
+    state.progress = Math.min(weeklyGoalTarget, Math.max(0, state.progress + increment));
+    localStorage.setItem(key, JSON.stringify(state));
+
+    const pct = Math.round((state.progress / weeklyGoalTarget) * 100);
+    bar.style.width = `${pct}%`;
+    text.textContent = currentLanguage === 'he'
+        ? `${state.progress} / ${weeklyGoalTarget} הושלמו`
+        : `${state.progress} / ${weeklyGoalTarget} complete`;
+
+    const goalText = document.getElementById('weeklyGoalText');
+    if (goalText) {
+        goalText.textContent = currentLanguage === 'he'
+            ? 'ביחד נשלים 500 רגעים של דיבור מודע השבוע.'
+            : "Together, let's complete 500 mindful speech moments this week.";
+    }
+}
+
+function getWeekStartDateString() {
+    const today = new Date();
+    const dayIndex = today.getDay();
+    const start = new Date(today);
+    start.setDate(today.getDate() - dayIndex);
+    return start.toDateString();
+}
+
+function updateMiddosMap() {
+    const lessons = parseInt(document.getElementById('lessonsLearned')?.textContent || '0', 10);
+    const chats = parseInt(document.getElementById('totalChats')?.textContent || '0', 10);
+    const streak = parseInt(document.getElementById('streakDays')?.textContent || '0', 10);
+    const score = lessons + chats + (streak * 2);
+
+    let unlockedStages = 1;
+    let summary = currentLanguage === 'he'
+        ? 'התחילו בהשלמת משימה היום כדי לפתוח את השלב הראשון.'
+        : 'Start by completing a mission today to unlock your first stage.';
+
+    if (score >= 10) {
+        unlockedStages = 2;
+        summary = currentLanguage === 'he'
+            ? 'אתם בשלב המשמעת - העקביות כבר נבנית.'
+            : 'You are in Discipline mode - consistency is forming.';
+    }
+    if (score >= 25) {
+        unlockedStages = 3;
+        summary = currentLanguage === 'he'
+            ? 'אתם מזככים את דפוסי הדיבור שלכם בחיים האמיתיים.'
+            : 'You are refining your speech patterns in real life.';
+    }
+    if (score >= 45) {
+        unlockedStages = 4;
+        summary = currentLanguage === 'he'
+            ? 'הצמיחה שלכם כבר משפיעה לטובה על הסביבה שלכם.'
+            : 'Your growth now positively influences the people around you.';
+    }
+
+    document.querySelectorAll('.middos-stage').forEach((stage, index) => {
+        stage.classList.toggle('active', index < unlockedStages);
+    });
+
+    const summaryEl = document.getElementById('middosStageSummary');
+    if (summaryEl) {
+        summaryEl.textContent = summary;
+    }
+}
+
+let lastSpeechLabResult = null;
+
+async function analyzeSpeechLabInput() {
+    const speechInput = document.getElementById('speechLabInput');
+    const contextInput = document.getElementById('speechLabContext');
+    const analyzeBtn = document.getElementById('analyzeSpeechBtn');
+    const resultPanel = document.getElementById('speechLabResult');
+    const riskEl = document.getElementById('speechLabRisk');
+    const reasonEl = document.getElementById('speechLabReason');
+    const rewriteEl = document.getElementById('speechLabRewrite');
+    const actionEl = document.getElementById('speechLabAction');
+
+    if (!speechInput || !analyzeBtn || !resultPanel || !riskEl || !reasonEl || !rewriteEl || !actionEl) {
+        return;
+    }
+
+    const statement = speechInput.value.trim();
+    const context = contextInput ? contextInput.value.trim() : '';
+
+    if (!statement) {
+        alert(currentLanguage === 'he' ? 'אנא כתבו קודם מה אתם מתכננים לומר.' : 'Please type what you plan to say first.');
+        return;
+    }
+
+    analyzeBtn.disabled = true;
+    analyzeBtn.textContent = currentLanguage === 'he' ? 'מנתח...' : 'Analyzing...';
+
+    try {
+        const response = await fetch('/api/chofetz-chaim/speech-lab', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                statement,
+                context,
+                language: currentLanguage
+            })
+        });
+
+        const data = await response.json();
+        const result = response.ok ? data : data.fallback;
+
+        if (!result) {
+            throw new Error('No analysis result available');
+        }
+        lastSpeechLabResult = result;
+
+        const riskClass = result.riskLevel || 'caution';
+        riskEl.className = `speech-lab-risk-badge ${riskClass}`;
+        riskEl.textContent = formatRiskLabel(riskClass);
+
+        reasonEl.textContent = result.reason || 'Please use caution.';
+        rewriteEl.textContent = result.saferRewrite || 'Let me say this in a gentler way.';
+        actionEl.textContent = result.actionStep || 'Pause and speak with care.';
+
+        resultPanel.classList.remove('hidden');
+    } catch (error) {
+        console.error('Speech Lab analysis failed:', error);
+        alert(currentLanguage === 'he' ? 'לא ניתן לנתח כרגע. נסו שוב בעוד רגע.' : 'Could not analyze right now. Please try again in a moment.');
+    } finally {
+        analyzeBtn.disabled = false;
+        analyzeBtn.textContent = t('speechLabAnalyzeBtn');
+    }
+}
+
+function formatRiskLabel(riskLevel) {
+    if (riskLevel === 'safe') return currentLanguage === 'he' ? 'בטוח' : 'Safe';
+    if (riskLevel === 'likely-lashon-hara') return currentLanguage === 'he' ? 'סביר לשון הרע' : 'Likely Lashon Hara';
+    return currentLanguage === 'he' ? 'זהירות' : 'Caution';
+}
+
+function renderSpeechLabLastResult() {
+    if (!lastSpeechLabResult) return;
+    const riskEl = document.getElementById('speechLabRisk');
+    if (riskEl) {
+        riskEl.textContent = formatRiskLabel(lastSpeechLabResult.riskLevel || 'caution');
+    }
+}
+
+async function copySpeechRewrite() {
+    if (!lastSpeechLabResult?.saferRewrite) return;
+    try {
+        await navigator.clipboard.writeText(lastSpeechLabResult.saferRewrite);
+        alert(currentLanguage === 'he' ? 'הניסוח הועתק.' : 'Rewrite copied.');
+    } catch (error) {
+        alert(currentLanguage === 'he' ? 'ההעתקה נכשלה.' : 'Copy failed.');
+    }
+}
+
+function sendSpeechRewriteToCommunity() {
+    if (!lastSpeechLabResult?.saferRewrite) return;
+    const shareInput = document.getElementById('shareInput');
+    const charCount = document.getElementById('charCount');
+    if (shareInput) {
+        shareInput.value = lastSpeechLabResult.saferRewrite;
+        if (charCount) charCount.textContent = String(lastSpeechLabResult.saferRewrite.length);
+        switchDashboardTab('community');
+        const feedBtn = document.querySelector('.learning-mode-btn[data-mode="feed"]');
+        if (feedBtn) feedBtn.click();
+        shareInput.focus();
+    }
+}
+
+function shareSpeechRewrite(channel) {
+    if (!lastSpeechLabResult?.saferRewrite) return;
+    const text = lastSpeechLabResult.saferRewrite;
+    const encoded = encodeURIComponent(text);
+
+    if (channel === 'whatsapp') window.open(`https://wa.me/?text=${encoded}`, '_blank');
+    if (channel === 'email') window.location.href = `mailto:?subject=${encodeURIComponent('Safer Speech Rewrite')}&body=${encoded}`;
+    if (channel === 'text') window.location.href = `sms:?&body=${encoded}`;
+}
+
+function getProgressShareMessage() {
+    const streak = document.getElementById('streakDays')?.textContent || '0';
+    const lessons = document.getElementById('lessonsLearned')?.textContent || '0';
+    const chats = document.getElementById('totalChats')?.textContent || '0';
+    return currentLanguage === 'he'
+        ? `אני במסע שלי בשמירת הלשון 🕊️\nרצף: ${streak} ימים\nשיעורים: ${lessons}\nשיחות: ${chats}\n${window.location.origin}`
+        : `I'm on my Shmiras HaLashon journey 🕊️\nStreak: ${streak} days\nLessons: ${lessons}\nConversations: ${chats}\n${window.location.origin}`;
+}
+
+function shareProgress(channel) {
+    const message = getProgressShareMessage();
+    const encoded = encodeURIComponent(message);
+    if (channel === 'twitter') window.open(`https://twitter.com/intent/tweet?text=${encoded}`, '_blank');
+    if (channel === 'whatsapp') window.open(`https://wa.me/?text=${encoded}`, '_blank');
+    if (channel === 'email') window.location.href = `mailto:?subject=${encodeURIComponent(currentLanguage === 'he' ? 'התקדמות בשמירת הלשון' : 'Shmiras HaLashon Progress')}&body=${encoded}`;
+    if (channel === 'text') window.location.href = `sms:?&body=${encoded}`;
+}
+
+async function copyProgressShareText() {
+    try {
+        await navigator.clipboard.writeText(getProgressShareMessage());
+        alert(t('progressCopied'));
+    } catch (error) {
+        alert(currentLanguage === 'he' ? 'ההעתקה נכשלה.' : 'Copy failed.');
+    }
+}
+
+function exportUserData() {
+    const focusTimer = loadFocusTimerState();
+    const payload = {
+        exportedAt: new Date().toISOString(),
+        user: currentUser?.name || '',
+        streakDays: document.getElementById('streakDays')?.textContent || '0',
+        lessonsLearned: document.getElementById('lessonsLearned')?.textContent || '0',
+        totalChats: document.getElementById('totalChats')?.textContent || '0',
+        conversations,
+        focusTimer
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `shmiras-halashon-progress-${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
 }
 
 function switchAuthTab(tab) {
@@ -838,10 +1717,7 @@ async function signup(name, email, password) {
 
 function logout() {
     signOut(auth).then(() => {
-        conversations = [];
-        currentConversation = [];
-        chatMessages.innerHTML = '';
-        // onAuthStateChanged will handle showing auth modal
+        window.location.reload();
     }).catch((error) => {
         console.error('Logout error:', error);
     });
@@ -1063,7 +1939,7 @@ function removeTypingIndicator() {
 // Share message content without requiring account
 async function shareMessageContent(messageText, userQuestion = null) {
     // Import translations
-    const { t, currentLanguage } = await import('./translations.js');
+    const { t, currentLanguage } = await import('./translations.js?v=20260426c');
     
     // Build the complete share content
     const disclaimer = `Important Notice ⚠️
@@ -1305,8 +2181,31 @@ async function loadConversationsFromFirestore() {
     }
 }
 
+function saveGuestConversationLocal() {
+    const today = new Date().toDateString();
+    let list = [];
+    try {
+        list = JSON.parse(localStorage.getItem('guestConversations') || '[]');
+    } catch (error) {
+        list = [];
+    }
+    const idx = list.findIndex((c) => c.date === today);
+    const entry = {
+        id: idx >= 0 ? list[idx].id : `guest_${Date.now()}`,
+        date: today,
+        messages: [...currentConversation]
+    };
+    if (idx >= 0) list[idx] = entry;
+    else list.push(entry);
+    localStorage.setItem('guestConversations', JSON.stringify(list));
+    conversations = list;
+}
+
 async function saveConversation() {
-    if (!currentUser) return;
+    if (!currentUser) {
+        saveGuestConversationLocal();
+        return;
+    }
     
     try {
         const today = new Date().toDateString();
@@ -1348,8 +2247,10 @@ function loadDashboardData() {
     }, 0);
     document.getElementById('totalChats').textContent = totalChats;
     
-    // Lessons learned (mock)
-    document.getElementById('lessonsLearned').textContent = conversations.length;
+    loadCompletedLessons();
+    updateWeeklyGoalProgress();
+    updateMiddosMap();
+    renderFocusTimerState();
     
     // Load learning logs
     loadLearningLogs();
@@ -1534,8 +2435,6 @@ let privateUnsubscribe = null;
 
 // Community Chat
 function loadCommunityChat() {
-    if (!currentUser) return;
-    
     const messagesContainer = document.getElementById('communityMessages');
     
     // Unsubscribe from previous listener
@@ -1574,8 +2473,12 @@ function loadCommunityChat() {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     });
     
-    // Update online count
-    updateOnlineCount();
+    if (currentUser) {
+        updateOnlineCount();
+    } else {
+        const onlineEl = document.getElementById('onlineUsersCount');
+        if (onlineEl) onlineEl.textContent = '–';
+    }
 }
 
 // Enhanced Lashon Hara screening function
@@ -1721,7 +2624,11 @@ async function sendCommunityMessage() {
     const input = document.getElementById('communityMessageInput');
     const message = input.value.trim();
     
-    if (!message || !currentUser) return;
+    if (!message) return;
+    if (!currentUser) {
+        alert(t('signInToChat'));
+        return;
+    }
     
     // Screen for lashon hara
     const screening = screenForLashonHara(message);
@@ -1767,6 +2674,7 @@ async function sendCommunityMessage() {
 }
 
 async function updateOnlineCount() {
+    if (!currentUser) return;
     try {
         // Update user's last seen
         await updateDoc(doc(db, 'users', currentUser.id), {
@@ -1874,7 +2782,10 @@ window.flagMessage = flagMessage;
 let allUsers = [];
 
 async function loadPrivateMessages() {
-    if (!currentUser) return;
+    if (!currentUser) {
+        alert(t('signInForPartners'));
+        return;
+    }
     
     try {
         // Load all users
@@ -2047,7 +2958,10 @@ function escapeHtml(text) {
 
 // Study Partners
 async function loadStudyPartners() {
-    if (!currentUser) return;
+    if (!currentUser) {
+        alert(t('signInForPartners'));
+        return;
+    }
     
     try {
         // Load user's profile
@@ -2168,3 +3082,259 @@ window.connectWithPartner = function(partnerId, partnerName) {
         window.selectUser(partnerId, partnerName);
     }, 100);
 };
+
+// =============================
+// Logo Assistant (click the header logo for help + navigation)
+// =============================
+const LOGO_ASSISTANT_TABS = {
+    bot: {
+        keywords: ['bot', 'chofetz', 'chat', 'ask', 'question', 'talk', 'conversation'],
+        label: '🕊️ Chofetz Chaim Bot',
+        description: "Ask questions about Shmiras HaLashon and get guidance from the Chofetz Chaim bot."
+    },
+    lesson: {
+        keywords: ['lesson', 'daily', 'day', 'learn', 'learning', 'sh yomi', 'yomi', 'lesson a day'],
+        label: '📖 A Lesson A Day',
+        description: 'Study one short Chofetz Chaim lesson a day, with a short "in a nutshell" summary.'
+    },
+    sefer: {
+        keywords: ['sefer', 'book', 'shmiras halashon', 'text', 'source', 'reading'],
+        label: '📚 Sefer Shmiras Halashon',
+        description: 'Read the Sefer Shmiras HaLashon directly in Hebrew or English.'
+    },
+    chizuk: {
+        keywords: ['chizuk', 'encourage', 'encouragement', 'inspiration', 'motivation', 'video'],
+        label: '💪 Chizuk',
+        description: 'Short chizuk videos and inspiration to strengthen your commitment.'
+    },
+    tools: {
+        keywords: ['tool', 'tools', 'timer', 'focus', 'hour of caring', 'machsom', 'speech lab', 'mission', 'reflection', 'buddy'],
+        label: '🧰 Shmiras HaLashon Tools',
+        description: 'Daily missions, Speech Lab, the No‑Lashon‑Hara Focus Timer, and Hour of Caring / Machsom L\'fi.'
+    },
+    prayer: {
+        keywords: ['prayer', 'tefilah', 'tefillah', 'pray', 'daven', 'dibur'],
+        label: '🙏 Shmiras HaLashon Prayer',
+        description: 'The Tefilah al HaDibur prayer in Hebrew and English.'
+    },
+    community: {
+        keywords: ['community', 'together', 'friends', 'buddy', 'partner', 'post', 'share', 'group', 'chat room', 'live chat', 'learning together'],
+        label: '👥 Learning Together',
+        description: 'Connect with others, share encouragement, and learn together.'
+    },
+    tracker: {
+        keywords: ['progress', 'tracker', 'streak', 'stats', 'completed', 'milestone', 'middos'],
+        label: '📊 Progress Tracker',
+        description: 'See your streaks, completed lessons, and Middos Growth Map.'
+    }
+};
+
+function initLogoAssistant() {
+    const trigger = document.getElementById('logoAssistantTrigger');
+    const modal = document.getElementById('logoAssistantModal');
+    const closeBtn = document.getElementById('closeLogoAssistant');
+    const form = document.getElementById('logoAssistantForm');
+    const input = document.getElementById('logoAssistantInput');
+    const supportHint = document.querySelector('.logo-support-hint');
+
+    if (!trigger || !modal || !form || !input) return;
+
+    trigger.addEventListener('click', openLogoAssistant);
+    if (supportHint) supportHint.addEventListener('click', openLogoAssistant);
+    if (closeBtn) closeBtn.addEventListener('click', closeLogoAssistant);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeLogoAssistant();
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+            closeLogoAssistant();
+        }
+    });
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const text = input.value.trim();
+        if (!text) return;
+        input.value = '';
+        await handleLogoAssistantQuery(text);
+    });
+}
+
+function openLogoAssistant() {
+    const modal = document.getElementById('logoAssistantModal');
+    const input = document.getElementById('logoAssistantInput');
+    const messages = document.getElementById('logoAssistantMessages');
+    if (!modal) return;
+    modal.classList.remove('hidden');
+    modal.setAttribute('aria-hidden', 'false');
+    if (messages && !messages.dataset.greeted) {
+        addLogoAssistantMessage('assistant', getLogoAssistantGreeting());
+        messages.dataset.greeted = '1';
+    }
+    setTimeout(() => input?.focus(), 50);
+}
+
+function closeLogoAssistant() {
+    const modal = document.getElementById('logoAssistantModal');
+    if (!modal) return;
+    modal.classList.add('hidden');
+    modal.setAttribute('aria-hidden', 'true');
+}
+
+function getLogoAssistantGreeting() {
+    try {
+        return (typeof t === 'function' && t('logoAssistantGreeting'))
+            || 'Welcome to the MysticMinded\u00B3\u00B3 Shmiras Halashon App! How can I help you today? I can take you to any section or answer basic questions about the app.';
+    } catch (_) {
+        return 'Welcome to the MysticMinded\u00B3\u00B3 Shmiras Halashon App! How can I help you today?';
+    }
+}
+
+function addLogoAssistantMessage(type, text, suggestedTabs = []) {
+    const container = document.getElementById('logoAssistantMessages');
+    if (!container) return;
+    const msg = document.createElement('div');
+    msg.className = `logo-assistant-message logo-assistant-message-${type}`;
+    msg.innerHTML = makeLinksClickable(escapeLogoAssistantHtml(text));
+
+    if (type === 'assistant' && suggestedTabs && suggestedTabs.length) {
+        const actions = document.createElement('div');
+        actions.className = 'logo-assistant-actions';
+        suggestedTabs.forEach(tab => {
+            const cfg = LOGO_ASSISTANT_TABS[tab];
+            if (!cfg) return;
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'logo-assistant-take-me';
+            btn.textContent = `Take me to ${cfg.label} →`;
+            btn.addEventListener('click', () => navigateToDashboardTab(tab, false));
+            actions.appendChild(btn);
+        });
+        if (actions.childNodes.length) msg.appendChild(actions);
+    }
+
+    container.appendChild(msg);
+    container.scrollTop = container.scrollHeight;
+}
+
+function detectSuggestedTabs(text) {
+    if (!text) return [];
+    const lower = text.toLowerCase();
+    const found = new Set();
+    for (const [tab, cfg] of Object.entries(LOGO_ASSISTANT_TABS)) {
+        const label = cfg.label.replace(/^[^A-Za-z]+/, '').toLowerCase();
+        if (label && lower.includes(label)) {
+            found.add(tab);
+            continue;
+        }
+        for (const kw of cfg.keywords) {
+            if (kw.length >= 5 && lower.includes(kw)) {
+                found.add(tab);
+                break;
+            }
+        }
+    }
+    return Array.from(found).slice(0, 3);
+}
+
+function escapeLogoAssistantHtml(str) {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
+function matchLogoAssistantIntent(text) {
+    const lower = text.toLowerCase();
+    const navIndicators = ['take me', 'go to', 'show me', 'open', 'bring me', 'navigate', 'where is', 'where do i', 'tab', 'section', 'page'];
+    const hasNavIntent = navIndicators.some(k => lower.includes(k));
+    let best = null;
+    let bestScore = 0;
+    for (const [tab, config] of Object.entries(LOGO_ASSISTANT_TABS)) {
+        for (const kw of config.keywords) {
+            if (lower.includes(kw)) {
+                const score = kw.length + (hasNavIntent ? 5 : 0);
+                if (score > bestScore) {
+                    bestScore = score;
+                    best = { tab, config };
+                }
+            }
+        }
+    }
+    if (!best) return null;
+    if (!hasNavIntent && bestScore < 6) return null;
+    return best;
+}
+
+function navigateToDashboardTab(tab, announce = false, delay = 1800) {
+    if (!LOGO_ASSISTANT_TABS[tab]) return;
+    if (announce) {
+        addLogoAssistantMessage('assistant', `Opening ${LOGO_ASSISTANT_TABS[tab].label} — ${LOGO_ASSISTANT_TABS[tab].description}`);
+    }
+    setTimeout(() => {
+        try {
+            if (typeof showDashboard === 'function') showDashboard();
+        } catch (_) {}
+        try {
+            if (typeof switchDashboardTab === 'function') switchDashboardTab(tab);
+        } catch (_) {}
+        closeLogoAssistant();
+        const el = document.getElementById(`${tab}Tab`);
+        if (el && typeof el.scrollIntoView === 'function') {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }, delay);
+}
+
+async function handleLogoAssistantQuery(text) {
+    addLogoAssistantMessage('user', text);
+
+    const intent = matchLogoAssistantIntent(text);
+    if (intent) {
+        const routingPreamble = (typeof t === 'function' && t('logoAssistantRouting'))
+            || 'OK, let me get you to the correct place to help with that.';
+        const takingYouToTpl = (typeof t === 'function' && t('logoAssistantTakingYouTo'))
+            || 'Taking you to {label} now…';
+        const takingYouTo = takingYouToTpl.replace('{label}', intent.config.label);
+
+        addLogoAssistantMessage('assistant', routingPreamble);
+        addLogoAssistantMessage(
+            'assistant',
+            `${takingYouTo} ${intent.config.description}`,
+            [intent.tab]
+        );
+        navigateToDashboardTab(intent.tab, false, 1800);
+        return;
+    }
+
+    const thinkingId = 'logo-assistant-thinking';
+    const container = document.getElementById('logoAssistantMessages');
+    const thinking = document.createElement('div');
+    thinking.id = thinkingId;
+    thinking.className = 'logo-assistant-message logo-assistant-message-assistant logo-assistant-thinking';
+    thinking.textContent = '…';
+    container?.appendChild(thinking);
+    container && (container.scrollTop = container.scrollHeight);
+
+    try {
+        const guidance = 'You are a helpful guide inside the MysticMinded\u00B3\u00B3 Shmiras Halashon App. ' +
+            'The app has these tabs: Chofetz Chaim Bot, A Lesson A Day, Sefer Shmiras Halashon, Chizuk, ' +
+            'Shmiras HaLashon Tools (Daily Mission, Speech Lab, No-Lashon-Hara Focus Timer, Hour of Caring / Machsom L\'fi), ' +
+            'Shmiras HaLashon Prayer (Tefilah al HaDibur), Learning Together (community), and Progress Tracker. ' +
+            'Answer the user briefly and, when relevant, mention the exact tab name so it is easy to navigate. ' +
+            'User message: ' + text;
+        const response = await fetch('/api/chofetz-chaim/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: guidance, language: currentLanguage })
+        });
+        const data = await response.json();
+        document.getElementById(thinkingId)?.remove();
+        const reply = data.response || data.fallback || "I'm not sure — try rephrasing your question.";
+        const suggested = detectSuggestedTabs(reply);
+        addLogoAssistantMessage('assistant', reply, suggested);
+    } catch (error) {
+        document.getElementById(thinkingId)?.remove();
+        addLogoAssistantMessage('assistant', "I'm having trouble connecting. Please try again shortly.");
+    }
+}

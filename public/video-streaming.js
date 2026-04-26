@@ -1,4 +1,4 @@
-import { auth, db, collection, addDoc, getDocs, query, where, orderBy, serverTimestamp, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, arrayUnion, arrayRemove } from './firebase-config.js';
+import { auth, db, collection, addDoc, getDocs, query, where, orderBy, serverTimestamp, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, arrayUnion, arrayRemove } from './firebase-config.js?v=20260426c';
 
 // WebRTC Configuration
 const configuration = {

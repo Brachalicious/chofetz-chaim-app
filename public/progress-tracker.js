@@ -1,4 +1,4 @@
-import { db, collection, doc, setDoc, getDoc, updateDoc, serverTimestamp, increment } from './firebase-config.js';
+import { db, collection, doc, setDoc, getDoc, updateDoc, serverTimestamp, increment } from './firebase-config.js?v=20260426c';
 
 // Progress tracking functions
 export class ProgressTracker {

@@ -183,3 +183,79 @@ export async function generateDailyEncouragement(): Promise<string> {
     throw error;
   }
 }
+
+export interface SpeechLabResult {
+  riskLevel: 'safe' | 'caution' | 'likely-lashon-hara';
+  reason: string;
+  saferRewrite: string;
+  actionStep: string;
+}
+
+/**
+ * Analyze planned speech and offer a safer rewrite.
+ */
+export async function analyzeSpeechScenario(
+  statement: string,
+  context: string = '',
+  language: string = 'en'
+): Promise<SpeechLabResult> {
+  try {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OpenAI API key not configured');
+    }
+
+    const languageInstruction = language === 'he'
+      ? 'Respond in Hebrew with clear and gentle language.'
+      : 'Respond in English with clear and gentle language.';
+
+    const completion = await getOpenAIClient().chat.completions.create({
+      model: 'gpt-4o',
+      temperature: 0.3,
+      max_tokens: 500,
+      response_format: { type: 'json_object' },
+      messages: [
+        {
+          role: 'system',
+          content: `You are a Shmiras HaLashon speech coach grounded in Chofetz Chaim principles.
+Return STRICT JSON with keys:
+- riskLevel: one of "safe", "caution", "likely-lashon-hara"
+- reason: short explanation
+- saferRewrite: respectful alternative sentence
+- actionStep: one practical next step
+
+Guidelines:
+- Do not issue formal psak halacha.
+- If uncertain, recommend asking a qualified rabbi.
+- Keep tone warm and constructive.
+- ${languageInstruction}`
+        },
+        {
+          role: 'user',
+          content: `Planned statement: "${statement}"\nContext: "${context || 'No additional context provided.'}"`
+        }
+      ]
+    });
+
+    const raw = completion.choices[0]?.message?.content;
+    if (!raw) {
+      throw new Error('No response content from model');
+    }
+
+    const parsed = JSON.parse(raw) as Partial<SpeechLabResult>;
+    const riskLevel = parsed.riskLevel;
+
+    if (riskLevel !== 'safe' && riskLevel !== 'caution' && riskLevel !== 'likely-lashon-hara') {
+      throw new Error('Invalid risk level received from model');
+    }
+
+    return {
+      riskLevel,
+      reason: parsed.reason || (language === 'he' ? 'נדרשת זהירות בניסוח.' : 'Use extra care with phrasing.'),
+      saferRewrite: parsed.saferRewrite || (language === 'he' ? 'אנסח זאת בעדינות וללא פרטים שליליים.' : 'I will phrase this gently without negative details.'),
+      actionStep: parsed.actionStep || (language === 'he' ? 'עצור לנשימה אחת לפני הדיבור.' : 'Pause for one breath before speaking.')
+    };
+  } catch (error: any) {
+    console.error('Error analyzing speech scenario:', error);
+    throw new Error(`Failed to analyze speech: ${error?.message || 'Unknown error'}`);
+  }
+}

@@ -1,4 +1,4 @@
-import { auth, db, collection, addDoc, getDocs, query, where, orderBy, serverTimestamp, doc, deleteDoc, updateDoc, increment, onSnapshot } from './firebase-config.js';
+import { auth, db, collection, addDoc, getDocs, query, where, orderBy, serverTimestamp, doc, deleteDoc, updateDoc, increment, onSnapshot } from './firebase-config.js?v=20260426c';
 
 let currentUser = null;
 let videosUnsubscribe = null;

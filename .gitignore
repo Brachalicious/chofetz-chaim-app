@@ -7,3 +7,7 @@ dist/
 *.swp
 *.swo
 *~
+
+# Netlify build artifacts
+.netlify/
+netlify/functions-internal/

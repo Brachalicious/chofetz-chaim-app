@@ -7,27 +7,34 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>Chofetz Chaim - Shmiras HaLashon App</title>
-    <link rel="stylesheet" href="/styles.css?v=4.0">
+    <link rel="stylesheet" href="/styles.css?v=20260426h">
 </head>
 <body>
-    <!-- Login/Signup Modal -->
-    <div id="authModal" class="modal">
+    <!-- Login/Signup Modal (optional — use header buttons while browsing as guest) -->
+    <div id="authModal" class="modal hidden">
         <div class="modal-content">
+            <button type="button" id="closeAuthModal" class="modal-close-btn" aria-label="Close">&times;</button>
             <div class="auth-header">
                 <img src="/mysticminded-logo-new.svg" alt="MysticMinded Logo" class="logo-image">
-                <h1 data-i18n="appTitle">🕊️ Chofetz Chaim</h1>
-                <p class="dedication" data-i18n="dedication">In honor of my Brother Yosef Yisroel Meyer named after the Chofetz Chaim for being such a role model on giving the benefit of the doubt and avoiding negative speech or judgement on others as well as my best friend Dr. Sima Bracha Shulman for being the greatest best friend a girl could have and for lending me her Shmiras halashon a lesson a day set with which I started to learn daily lessons and quickly found it so helpful in my daily growth and so life changing! May every lesson learned be in their righteous merit and in their zechus and may all their tefilot be answered amen!</p>
-                <p class="subtitle" data-i18n="subtitle">Your Guide to Shmiras HaLashon</p>
+                <h1 data-i18n="appTitle">Chofetz Chaim Shmiras Halashon App</h1>
+                <p class="auth-dedication-link"><a href="/dedication.html" data-i18n="readDedication">Read dedication</a></p>
             </div>
             
             <!-- Language Toggle -->
             <div class="language-toggle">
                 <button id="languageToggle" class="lang-btn">עברית</button>
             </div>
+
+            <p class="auth-optional-hint" data-i18n="accountOptionalHint">Sign in or create an account to save your progress in the cloud and use community features.</p>
             
             <div class="auth-tabs">
                 <button class="tab-btn active" data-tab="login" data-i18n="signIn">Sign In</button>
                 <button class="tab-btn" data-tab="signup" data-i18n="signUp">Sign Up</button>
+            </div>
+
+            <div class="auth-save-note" role="note">
+                <span class="auth-save-note-icon" aria-hidden="true">🔒</span>
+                <span data-i18n="authSaveNote">Create an account to save your progress, goals, streaks, completed lessons, and learning log. Without an account your data stays on this device only and can be lost.</span>
             </div>
 
             <!-- Login Form -->
@@ -75,18 +82,27 @@
     </div>
 
     <!-- Main App Container -->
-    <div id="appContainer" class="hidden">
+    <div id="appContainer">
         <!-- Header -->
         <header class="app-header">
             <div class="header-content">
-                <div class="logo">
+                <h1 class="app-title-corner" data-i18n="appTitle">Chofetz Chaim Shmiras Halashon App</h1>
+                <button type="button" class="logo logo-assistant-trigger" id="logoAssistantTrigger" aria-label="Open help assistant">
                     <img src="/mysticminded-logo-new.svg" alt="MysticMinded Logo" class="header-logo">
-                    <h1 data-i18n="appTitle">🕊️ Chofetz Chaim</h1>
-                </div>
+                </button>
+                <p class="logo-support-hint" data-i18n="logoSupportHint">
+                    <span class="logo-support-arrow" aria-hidden="true">←</span>
+                    Click the MysticMinded³³ bot for quick support
+                </p>
                 <div class="header-right">
                     <button id="languageToggleApp" class="lang-btn">עברית</button>
                     <button id="dashboardBtn" class="icon-btn" title="Dashboard" data-i18n="dashboard">Dashboard</button>
-                    <div class="user-menu">
+                    <div id="guestAuthBar" class="guest-auth-bar">
+                        <span class="guest-auth-hint" data-i18n="guestAuthHint" title="Your progress and goals are only saved when you have an account.">🔒 Sign up to save your progress & goals</span>
+                        <button type="button" id="openSignInBtn" class="btn-header-auth" data-i18n="signIn">Sign In</button>
+                        <button type="button" id="openSignUpBtn" class="btn-header-auth btn-header-auth-primary" data-i18n="signUp">Sign Up</button>
+                    </div>
+                    <div id="userMenuWrapper" class="user-menu hidden">
                         <button id="userMenuBtn" class="user-btn">
                             <span id="userName">User</span>
                             <span class="dropdown-icon">▼</span>
@@ -94,6 +110,7 @@
                         <div id="userDropdown" class="dropdown-menu hidden">
                             <button id="profileBtn" data-i18n="myProfile">My Profile</button>
                             <button id="streaksBtn" data-i18n="myProgress">My Progress</button>
+                            <button type="button" id="dedicationBtn" data-i18n="readDedication">Read dedication</button>
                             <button id="logoutBtn" data-i18n="signOut">Sign Out</button>
                         </div>
                     </div>
@@ -101,14 +118,17 @@
             </div>
         </header>
 
-        <!-- Dedication Banner -->
-        <div class="dedication-banner">
+        <!-- Dedication link -->
+        <div class="dedication-banner dedication-banner-compact">
             <div class="dedication-content">
-                <p class="dedication-text" data-i18n="dedication">
-                    In honor of my Brother <strong>Yosef Yisroel Meyer</strong> named after the Chofetz Chaim for being such a role model on giving the benefit of the doubt and avoiding negative speech or judgement on others as well as my best friend <strong>Dr. Sima Bracha Shulman</strong> for being the greatest best friend a girl could have and for lending me her Shmiras halashon a lesson a day set with which I started to learn daily lessons and quickly found it so helpful in my daily growth and so life changing! May every lesson learned be in their righteous merit and in their zechus and may all their tefilot be answered amen! ❤️
-                </p>
+                <a href="/dedication.html" class="dedication-banner-link" data-i18n="readDedication">Read dedication</a>
             </div>
         </div>
+
+        <section class="lashon-banner">
+            <p class="lashon-banner-top" data-i18n="lashonBannerTop">לשון הרע,</p>
+            <p class="lashon-banner-bottom" data-i18n="lashonBannerBottom">נא מדבר אלינו!</p>
+        </section>
 
         <!-- Main Content -->
         <main class="main-content">
@@ -206,13 +226,14 @@
             <div id="dashboardView" class="view active">
                 <div class="dashboard-container">
                     <h2 data-i18n="dashboardTitle">Your Shmiras HaLashon Journey</h2>
-                    
                     <!-- Dashboard Tabs -->
                     <div class="dashboard-tabs">
                         <button class="dashboard-tab active" data-tab="bot" data-i18n="botTab">🕊️ Chofetz Chaim Bot</button>
                         <button class="dashboard-tab" data-tab="lesson" data-i18n="lessonTab">📖 A Lesson A Day</button>
+                        <button class="dashboard-tab" data-tab="sefer" data-i18n="seferTab">📚 Sefer Shmiras Halashon</button>
                         <button class="dashboard-tab" data-tab="chizuk" data-i18n="chizukTab">💪 Chizuk</button>
-                        <button class="dashboard-tab" data-tab="prayer" data-i18n="prayerTab">🙏 Daily Prayer</button>
+                        <button class="dashboard-tab" data-tab="tools" data-i18n="toolsTab">🧰 Shmiras HaLashon Tools</button>
+                        <button class="dashboard-tab" data-tab="prayer" data-i18n="prayerTab">🙏 Shmiras HaLashon Prayer</button>
                         <button class="dashboard-tab" data-tab="community" data-i18n="communityTab">👥 Learning Together</button>
                         <button class="dashboard-tab" data-tab="tracker" data-i18n="trackerTab">📊 Progress Tracker</button>
                     </div>
@@ -223,6 +244,138 @@
                             <img src="/chofetz_chaim.svg" alt="Chofetz Chaim" id="dashboardBotImage">
                             <p class="bot-message" data-i18n="botMessage">Click me to start a conversation about Shmiras HaLashon</p>
                         </div>
+                    </div>
+
+                    <!-- Tools Tab Content -->
+                    <div id="toolsTab" class="dashboard-tab-content">
+                        <section class="epic-mission-card" id="dailyMissionCard">
+                            <div class="epic-mission-header">
+                                <p class="epic-kicker" data-i18n="dailyReflections">Daily Reflections</p>
+                                <h3 id="dailyMissionTitle">Speak with intention in one difficult moment today.</h3>
+                            </div>
+                            <p id="dailyMissionDescription" class="epic-mission-description">
+                                Choose one conversation where you usually react quickly and pause before responding.
+                            </p>
+                            <div class="epic-mission-actions">
+                                <button id="completeMissionBtn" class="btn-primary" data-i18n="missionCompleteBtn">✅ I Completed This</button>
+                                <button id="refreshMissionBtn" class="btn-secondary" data-i18n="missionRefreshBtn">🔄 Give Me Another Mission</button>
+                            </div>
+                            <div class="mission-share-actions">
+                                <span class="mission-share-label" data-i18n="missionShareLabel">Share mission:</span>
+                                <button id="shareMissionWhatsAppBtn" class="btn-secondary" data-i18n="shareWhatsAppShort">💬 WhatsApp</button>
+                                <button id="shareMissionEmailBtn" class="btn-secondary" data-i18n="shareEmailShort">✉️ Email</button>
+                                <button id="shareMissionTextBtn" class="btn-secondary" data-i18n="shareTextShort">📱 Text</button>
+                            </div>
+                            <div class="mission-reflection">
+                                <label for="missionReflectionInput" data-i18n="missionReflectionLabel">Quick reflection</label>
+                                <textarea id="missionReflectionInput" rows="2" maxlength="240" data-i18n-placeholder="missionReflectionPlaceholder" placeholder="What changed in your speech today?"></textarea>
+                                <button id="saveReflectionBtn" class="btn-secondary" data-i18n="missionSaveReflectionBtn">💾 Save Reflection</button>
+                            </div>
+                            <p id="missionStatus" class="mission-status-text"></p>
+                        </section>
+                        <div class="speech-lab-card">
+                            <h3 data-i18n="speechLabTitle">🧪 Speech Lab: Can I say this?</h3>
+                            <p class="speech-lab-intro" data-i18n="speechLabIntro">Type what you plan to say and get a guided risk check with a safer rewrite.</p>
+                            <div class="speech-lab-form">
+                                <label for="speechLabInput" data-i18n="speechLabInputLabel">Planned sentence</label>
+                                <textarea id="speechLabInput" rows="3" maxlength="280" data-i18n-placeholder="speechLabInputPlaceholder" placeholder="Example: I need to tell someone what happened with this person..."></textarea>
+                                <label for="speechLabContext" data-i18n="speechLabContextLabel">Context (optional)</label>
+                                <textarea id="speechLabContext" rows="2" maxlength="240" data-i18n-placeholder="speechLabContextPlaceholder" placeholder="Why do you need to share this? Who is the listener?"></textarea>
+                                <button id="analyzeSpeechBtn" class="btn-primary" data-i18n="speechLabAnalyzeBtn">Analyze Speech</button>
+                            </div>
+                            <div id="speechLabResult" class="speech-lab-result hidden">
+                                <div class="speech-lab-risk-row">
+                                    <span class="speech-lab-label" data-i18n="speechLabRiskLabel">Risk level:</span>
+                                    <span id="speechLabRisk" class="speech-lab-risk-badge"></span>
+                                </div>
+                                <p><strong data-i18n="speechLabWhyLabel">Why:</strong> <span id="speechLabReason"></span></p>
+                                <p><strong data-i18n="speechLabRewriteLabel">Safer rewrite:</strong> <span id="speechLabRewrite"></span></p>
+                                <p><strong data-i18n="speechLabActionLabel">Next step:</strong> <span id="speechLabAction"></span></p>
+                                <div class="speech-lab-actions">
+                                    <button id="copyRewriteBtn" class="btn-secondary" data-i18n="copyRewriteBtn">📋 Copy Rewrite</button>
+                                    <button id="sendRewriteToCommunityBtn" class="btn-secondary" data-i18n="sendRewriteToCommunityBtn">👥 Send to Community</button>
+                                    <button id="shareRewriteWhatsAppBtn" class="btn-secondary" data-i18n="shareWhatsAppShort">💬 WhatsApp</button>
+                                    <button id="shareRewriteEmailBtn" class="btn-secondary" data-i18n="shareEmailShort">✉️ Email</button>
+                                    <button id="shareRewriteTextBtn" class="btn-secondary" data-i18n="shareTextShort">📱 Text</button>
+                                </div>
+                            </div>
+                        </div>
+                        <section class="focus-timer-card">
+                            <h3 data-i18n="focusTimerTitle">⏳ No Lashon Hara Focus Timer</h3>
+                            <p class="focus-timer-intro" data-i18n="focusTimerIntro">Commit to one focused hour of careful speech each day, then gradually expand your goal.</p>
+                            <div class="focus-timer-stats">
+                                <div class="focus-chip">
+                                    <span class="focus-chip-label" data-i18n="focusTargetLabel">Daily Goal</span>
+                                    <strong id="focusTargetText">60 min</strong>
+                                </div>
+                                <div class="focus-chip">
+                                    <span class="focus-chip-label" data-i18n="focusTodayLabel">Today's Time</span>
+                                    <strong id="focusElapsedText">00:00:00</strong>
+                                </div>
+                                <div class="focus-chip">
+                                    <span class="focus-chip-label" data-i18n="focusCompletedDaysLabel">Completed Days</span>
+                                    <strong id="focusCompletedDaysText">0</strong>
+                                </div>
+                            </div>
+                            <div class="focus-timer-actions">
+                                <button id="focusStartPauseBtn" class="btn-primary" data-i18n="focusStartBtn">▶️ Start</button>
+                                <button id="focusResetBtn" class="btn-secondary" data-i18n="focusResetBtn">↺ Reset Today</button>
+                                <button id="focusExpandBtn" class="btn-secondary" data-i18n="focusExpandBtn">⬆️ Expand Goal +15m</button>
+                            </div>
+                            <div class="mission-share-actions">
+                                <span class="mission-share-label" data-i18n="focusShareLabel">Share timer:</span>
+                                <button id="shareFocusWhatsAppBtn" class="btn-secondary" data-i18n="shareWhatsAppShort">WhatsApp</button>
+                                <button id="shareFocusEmailBtn" class="btn-secondary" data-i18n="shareEmailShort">Email</button>
+                                <button id="shareFocusTextBtn" class="btn-secondary" data-i18n="shareTextShort">Text</button>
+                            </div>
+                            <div class="focus-buddy-inline">
+                                <h4 data-i18n="buddyFeatureTitle">🤝 Accountability Buddy</h4>
+                                <p class="focus-timer-intro" data-i18n="buddyFeatureIntro">Motivate each other with daily encouragement and shared focus goals.</p>
+                                <div class="buddy-input-grid">
+                                    <input id="buddyNameInput" type="text" maxlength="80" data-i18n-placeholder="buddyNamePlaceholder" placeholder="Buddy name">
+                                    <input id="buddyContactInput" type="text" maxlength="120" data-i18n-placeholder="buddyContactPlaceholder" placeholder="Phone or email (optional)">
+                                </div>
+                                <div class="focus-timer-actions">
+                                    <button id="saveBuddyBtn" class="btn-secondary" data-i18n="saveBuddyBtn">💾 Save Buddy</button>
+                                    <button id="sendBuddyNudgeBtn" class="btn-primary" data-i18n="sendBuddyNudgeBtn">💬 Send Motivation</button>
+                                    <button id="copyBuddyMessageBtn" class="btn-secondary" data-i18n="copyBuddyMessageBtn">📋 Copy Message</button>
+                                </div>
+                                <p id="buddyStatus" class="focus-timer-status"></p>
+                            </div>
+                            <p id="focusTimerStatus" class="focus-timer-status"></p>
+                        </section>
+                        <section class="machsom-resource-card" aria-labelledby="machsom-resource-heading">
+                            <h3 id="machsom-resource-heading" data-i18n="machsomResourceTitle">🕐 Machsom L'Fi — Hour of Caring</h3>
+                            <p class="machsom-cchf-global-link">
+                                <a href="https://cchf.global/hourofcaring/" target="_blank" rel="noopener noreferrer" data-i18n="machsomCchfGlobalLink">Official Hour of Caring program — CCHF Global</a>
+                            </p>
+                            <p class="machsom-resource-lead" data-i18n="machsomResourceLead">Inspired by the Chofetz Chaim Heritage Foundation: a daily commitment to guard your speech for a set period of time.</p>
+                            <h4 class="machsom-resource-subhead" data-i18n="machsomHourCaringTitle">What is an Hour of Caring?</h4>
+                            <p class="machsom-resource-text" data-i18n="machsomHourCaringBody">An Hour of Caring is a structured way to dedicate time each day to the mitzvah of Shmiras HaLashon—being mindful of how you speak, listen, read, and write.</p>
+                            <h4 class="machsom-resource-subhead" data-i18n="machsomWhatReceiveTitle">What will I receive?</h4>
+                            <p class="machsom-resource-text" data-i18n="machsomWhatReceiveBody">Greater awareness, stronger habits, and tremendous spiritual merit. The Vilna Gaon teaches that even a single moment of restraint in this area earns a reward beyond what angels can grasp.</p>
+                            <h4 class="machsom-resource-subhead" data-i18n="machsomWhatIsMachsomTitle">What is Machsom L'Fi?</h4>
+                            <p class="machsom-resource-text" data-i18n="machsomDefinition">Machsom L'Fi is the set period of time each day that people commit to focusing on the proper use of their speech.</p>
+                            <h4 class="machsom-resource-subhead" data-i18n="machsomDuringTitle">During that time</h4>
+                            <p class="machsom-resource-text" data-i18n="machsomDuringBody">They concentrate on avoiding speaking, hearing, reading, or writing loshon hora and any other forms of forbidden speech.</p>
+                            <h4 class="machsom-resource-subhead" data-i18n="machsomSignificanceTitle">Significance of an hour</h4>
+                            <p class="machsom-resource-text" data-i18n="machsomSignificanceBody">Practically, when a person masters this mitzvah for the limited time period of the Machsom L'Fi, he begins to feel a greater sense of control in his habits of speech, which strengthens his restraint throughout the day.</p>
+                            <h4 class="machsom-resource-subhead" data-i18n="machsomMitzvahTitle">Doing a mitzvah for an hour</h4>
+                            <p class="machsom-resource-text" data-i18n="machsomMitzvahBody">Doing a mitzvah for an hour earns tremendous merit. For Shmiras HaLashon in particular, the Vilna Gaon states that even one moment of restraint earns a reward beyond the comprehension of angels.</p>
+                            <div class="machsom-resource-signup">
+                                <a class="btn-primary" href="https://cchf.global/hourofcaring/" target="_blank" rel="noopener noreferrer" data-i18n="machsomSignupIndividual">Yes! Start an Hour of Caring on my own</a>
+                                <a class="btn-secondary" href="https://cchf.global/hourofcaring/" target="_blank" rel="noopener noreferrer" data-i18n="machsomSignupGroup">Yes! Start an Hour of Caring group</a>
+                            </div>
+                            <blockquote class="machsom-testimonial">
+                                <p data-i18n="machsomQuote1">We started a Machsom L'fi in our own home… Our home has become an island of peace and tranquility as my children try in every situation to seek the good and the positive.</p>
+                                <cite data-i18n="machsomQuote1Cite">— A Machsom L'Fi Advocate</cite>
+                            </blockquote>
+                            <blockquote class="machsom-testimonial">
+                                <p data-i18n="machsomQuote2">We started this group as a zechus for a shidduch for a family member. I was convinced that I was doing something for them, but you can't imagine how much more it did for me and my family.</p>
+                                <cite data-i18n="machsomQuote2Cite">— S. Steinberg, Monsey, NY</cite>
+                            </blockquote>
+                            <p class="machsom-resource-footnote" data-i18n="machsomResourceAttribution">© 2020 Chofetz Chaim Heritage Foundation</p>
+                        </section>
                     </div>
 
                     <!-- Prayer Tab Content -->
@@ -271,6 +424,14 @@
                             <!-- Community Feed Section -->
                             <div id="communityFeedSection" class="learning-together-section active">
                                 <p class="community-intro" data-i18n="communityIntro">Join others in their journey of Shmiras HaLashon! See what lessons the community is learning and share your own progress.</p>
+                                <div class="community-goal-card">
+                                    <h4 data-i18n="weeklyGoalTitle">🎯 Weekly Community Goal</h4>
+                                    <p id="weeklyGoalText">Together, let's complete 500 mindful speech moments this week.</p>
+                                    <div class="goal-progress-track" aria-label="Weekly community goal progress">
+                                        <div id="weeklyGoalProgressBar" class="goal-progress-fill"></div>
+                                    </div>
+                                    <p id="weeklyGoalProgressText" class="goal-progress-text">0 / 500 complete</p>
+                                </div>
                                 
                                 <!-- Share Your Progress -->
                                 <div class="share-progress-card">
@@ -289,6 +450,11 @@
                                     <button id="postShareBtn" class="btn-primary">
                                         <span data-i18n="shareWithCommunity">🚀 Share with Community</span>
                                     </button>
+                                </div>
+                                <div class="prompt-chip-row">
+                                    <button class="prompt-chip" data-i18n="promptChipPauseWin" data-prompt-en="I paused before speaking and it changed the whole tone." data-prompt-he="עצרתי לפני שדיברתי וזה שינה את כל הטון.">Pause win</button>
+                                    <button class="prompt-chip" data-i18n="promptChipDan" data-prompt-en="Today's lesson helped me judge someone more favorably." data-prompt-he="השיעור של היום עזר לי לדון מישהו לכף זכות.">Dan L'kaf zechut moment</button>
+                                    <button class="prompt-chip" data-i18n="promptChipGuarded" data-prompt-en="I avoided repeating something negative today." data-prompt-he="נמנעתי היום מלחזור על משהו שלילי.">Guarded my tongue</button>
                                 </div>
                             </div>
 
@@ -613,11 +779,28 @@
                                 <a href="https://www.sefaria.org/Chofetz_Chaim" target="_blank" rel="noopener noreferrer" style="color: #2c5aa0; font-weight: bold; text-decoration: underline;">Sefaria.org</a> 
                                 <span data-i18n="hebrewSourceNoteEnd">to study the original Sefer Chofetz Chaim and Sefer Shemiras HaLashon in Hebrew.</span>
                             </p>
+
+                            <p class="cchf-source-note" style="background: #f3edff; padding: 10px; border-radius: 8px; margin: 10px 0; font-size: 0.9em;">
+                                <span data-i18n="cchfSourceNoteIntro">🌐 Prefer the official site? Read the full daily lesson on</span>
+                                <a href="https://cchf.global/daily-companion/?days=yes" target="_blank" rel="noopener noreferrer" style="color: #5d4a9e; font-weight: bold; text-decoration: underline;">CCHF Daily Companion</a>
+                                <span data-i18n="cchfSourceNoteEnd">— the Chofetz Chaim Heritage Foundation's daily learning program.</span>
+                            </p>
                             
                             <div id="lessonContentNotice" class="lesson-notice" style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 10px; border-radius: 8px; margin: 10px 0; font-size: 0.9em; display: none;">
                                 <p style="margin: 0;" data-i18n="lessonContentNotice">⚠️ Note: Daily lesson content is currently available in English only. For Hebrew texts, please visit the Sefaria link above.</p>
                             </div>
-                            
+
+                            <div class="lesson-index-wrapper">
+                                <button type="button" id="lessonIndexToggle" class="lesson-index-toggle" aria-expanded="false" aria-controls="lessonIndexPanel">
+                                    <span data-i18n="lessonIndexToggle">📑 Jump to a specific day</span>
+                                    <span class="lesson-index-chevron">▾</span>
+                                </button>
+                                <div id="lessonIndexPanel" class="lesson-index-panel" hidden>
+                                    <p class="lesson-index-hint" data-i18n="lessonIndexHint">Tap any day to open that lesson.</p>
+                                    <div id="lessonIndexGrid" class="lesson-index-grid"></div>
+                                </div>
+                            </div>
+
                             <div class="daily-lesson-card">
                                 <div class="lesson-header">
                                     <button id="prevDayBtn" class="nav-btn"><span data-i18n="previousBtn">Previous</span> ◀</button>
@@ -633,6 +816,26 @@
                                     </p>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Sefer Shmiras Halashon Tab Content -->
+                    <div id="seferTab" class="dashboard-tab-content">
+                        <div class="sefer-learning-section">
+                            <h3 data-i18n="seferTitle">📚 Sefer Shmiras Halashon (Hebrew)</h3>
+                            <p class="lesson-intro" data-i18n="seferIntro">Browse the Hebrew text of Sefer Chofetz Chaim / Shmiras Halashon.</p>
+                            <div class="sefer-controls">
+                                <label for="seferSourceSelect" data-i18n="seferSourceLabel">Source language</label>
+                                <select id="seferSourceSelect">
+                                    <option value="he" data-i18n="seferSourceHebrew">Hebrew</option>
+                                    <option value="en" data-i18n="seferSourceEnglish">English (Silverstein translation)</option>
+                                </select>
+                                <label for="seferSectionSelect" data-i18n="seferSectionLabel">Section</label>
+                                <select id="seferSectionSelect"></select>
+                                <label for="seferChapterSelect" data-i18n="seferChapterLabel">Chapter</label>
+                                <select id="seferChapterSelect"></select>
+                            </div>
+                            <div id="seferContent" class="sefer-content"></div>
                         </div>
                     </div>
                         </div>
@@ -749,6 +952,62 @@
                         </div>
                     </div>
 
+                    <section class="goals-section" id="goalsSection">
+                        <div class="goals-header">
+                            <h3 data-i18n="goalsTitle">🎯 My Shmiras HaLashon Goals</h3>
+                            <p class="goals-intro" data-i18n="goalsIntro">Choose from common goals below, or add your own. Check them off each day you live them — your streak grows as you stay consistent.</p>
+                        </div>
+
+                        <p id="goalsGuestNote" class="goals-guest-note hidden" data-i18n="goalsGuestNote">🔒 You're browsing as a guest — goals are saved on this device only. Create an account to sync them everywhere.</p>
+
+                        <div class="goals-presets-block">
+                            <h4 data-i18n="goalsPresetsTitle">✨ Common Goals</h4>
+                            <p class="goals-section-hint" data-i18n="goalsPresetsHint">Tap any goal to add it to your list.</p>
+                            <div id="goalsPresetsList" class="goals-presets-list"></div>
+                        </div>
+
+                        <div class="goals-custom-block">
+                            <h4 data-i18n="goalsCustomTitle">✍️ Add Your Own Goal</h4>
+                            <form id="customGoalForm" class="custom-goal-form">
+                                <input type="text" id="customGoalInput" maxlength="140" required
+                                       data-i18n-placeholder="goalsCustomPlaceholder"
+                                       placeholder="e.g., 'Say one word of chizuk to my spouse each evening'">
+                                <button type="submit" class="btn-primary" data-i18n="goalsCustomAddBtn">Add Goal</button>
+                            </form>
+                        </div>
+
+                        <div class="goals-my-block">
+                            <h4 data-i18n="goalsMyTitle">📋 My Active Goals</h4>
+                            <div id="myGoalsList" class="my-goals-list">
+                                <p class="empty-state" data-i18n="goalsEmpty">No goals yet. Pick one above or add your own to start tracking.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="middos-map-card">
+                        <h3 data-i18n="middosMapTitle">🌳 Middos Growth Map</h3>
+                        <p class="middos-map-intro" data-i18n="middosMapIntro">Your journey from awareness to refined speech grows with every mission, lesson, and encouraging post.</p>
+                        <div class="middos-stages">
+                            <div class="middos-stage" data-stage="awareness">
+                                <span class="stage-dot"></span>
+                                <span data-i18n="middosStageAwareness">Awareness</span>
+                            </div>
+                            <div class="middos-stage" data-stage="discipline">
+                                <span class="stage-dot"></span>
+                                <span data-i18n="middosStageDiscipline">Discipline</span>
+                            </div>
+                            <div class="middos-stage" data-stage="refinement">
+                                <span class="stage-dot"></span>
+                                <span data-i18n="middosStageRefinement">Refinement</span>
+                            </div>
+                            <div class="middos-stage" data-stage="influence">
+                                <span class="stage-dot"></span>
+                                <span data-i18n="middosStageInfluence">Positive Influence</span>
+                            </div>
+                        </div>
+                        <p id="middosStageSummary" class="middos-stage-summary">Start by completing a mission today to unlock your first stage.</p>
+                    </section>
+
                     <!-- Completed Lessons -->
                     <div class="completed-lessons-section">
                         <h3 data-i18n="completedLessons">✅ Completed Lessons</h3>
@@ -856,6 +1115,8 @@
                         <div class="share-buttons">
                             <button id="shareTwitterBtn" class="btn-share twitter">🐦 Twitter</button>
                             <button id="shareWhatsAppBtn" class="btn-share whatsapp">💬 WhatsApp</button>
+                            <button id="shareEmailBtn" class="btn-share email">✉️ <span data-i18n="shareEmailShort">Email</span></button>
+                            <button id="shareTextBtn" class="btn-share text">📱 <span data-i18n="shareTextShort">Text</span></button>
                             <button id="copyLinkBtn" class="btn-share copy">📋 <span data-i18n="copyLink">Copy Link</span></button>
                             <button id="exportDataBtn" class="btn-share export">📥 <span data-i18n="exportData">Export Data</span></button>
                         </div>
@@ -877,13 +1138,29 @@
 
     <!-- Floating bot removed - bot is now in dashboard tab -->
 
-    <script type="module" src="/translations.js"></script>
-    <script type="module" src="/progress-tracker.js"></script>
-    <script type="module" src="/firebase-config.js"></script>
-    <script type="module" src="/daily-lessons.js"></script>
-    <script type="module" src="/video-streaming.js"></script>
-    <script type="module" src="/chizuk-videos.js"></script>
-    <script type="module" src="/app.js"></script>
+    <!-- Logo Assistant Modal -->
+    <div id="logoAssistantModal" class="modal hidden" aria-hidden="true">
+        <div class="modal-content logo-assistant-content" role="dialog" aria-modal="true" aria-labelledby="logoAssistantTitle">
+            <button type="button" id="closeLogoAssistant" class="modal-close-btn" aria-label="Close">&times;</button>
+            <div class="logo-assistant-header">
+                <img src="/mysticminded-logo-new.svg" alt="" class="logo-assistant-logo">
+                <h2 id="logoAssistantTitle" data-i18n="logoAssistantWelcome">Welcome to the MysticMinded³³ Shmiras Halashon App</h2>
+                <p data-i18n="logoAssistantPrompt">How can I help you today? Type a question, or tell me where you'd like to go.</p>
+            </div>
+            <div id="logoAssistantMessages" class="logo-assistant-messages" aria-live="polite"></div>
+            <form id="logoAssistantForm" class="logo-assistant-form">
+                <input type="text" id="logoAssistantInput" maxlength="300" autocomplete="off"
+                       data-i18n-placeholder="logoAssistantInputPlaceholder"
+                       placeholder="E.g., 'Take me to Sefer' or 'What can I do here?'">
+                <button type="submit" class="btn-primary" data-i18n="logoAssistantSendBtn">Send</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modules imported by app.js are loaded through its import graph; no redundant <script> tags. -->
+    <script type="module" src="/progress-tracker.js?v=20260426c"></script>
+    <script type="module" src="/sefer-shmiras-halashon.js?v=20260426c"></script>
+    <script type="module" src="/app.js?v=20260426c"></script>
 </body>
 </html>
 
