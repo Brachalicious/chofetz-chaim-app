@@ -3,9 +3,9 @@
 ## served as serverless Netlify Functions under /netlify/functions.
 
 [build]
-  ## Nothing to build — the frontend is already plain HTML/JS/CSS in /public.
-  ## Netlify still needs a build command so TypeScript functions get bundled.
-  command = "echo 'No build step required for static assets.'"
+  ## The frontend is plain HTML/JS/CSS in /public, while the API is bundled
+  ## from TypeScript functions. Run the shared build gate before publishing.
+  command = "npm run build"
   ## Skip automatic Git builds when a commit only changes docs, rules, or other
   ## files that do not affect the deployed Netlify site.
   ignore = "bash scripts/netlify-ignore.sh"
@@ -32,6 +32,12 @@
 [[redirects]]
   from = "/api/chofetz-chaim/daily-encouragement"
   to = "/.netlify/functions/chofetz-chaim-daily-encouragement"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/chofetz-chaim/speech"
+  to = "/.netlify/functions/chofetz-chaim-speech"
   status = 200
   force = true
 

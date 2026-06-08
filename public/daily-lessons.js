@@ -1297,6 +1297,26 @@ dailyLessons[32] = {
     `
 };
 
+dailyLessons[33] = {
+    title: "Words in Public, Responsibility in Private",
+    date: "February 20, 2026",
+    section: "Based on The SH Yomi Calendar — Day 33",
+    content: `
+        <p>When information is said publicly, people often assume that everyone now has permission to repeat it freely. The Chofetz Chaim teaches us to be far more careful. Public exposure does not erase the laws of harmful speech, and it certainly does not erase our responsibility for what happens when we pass information onward.</p>
+
+        <p>Even when something is technically known, repeating it can still produce damage: strained relationships, embarrassment, loss of trust, and long-term resentment. Before repeating any negative detail, we must ask ourselves whether sharing serves a genuine constructive purpose, or whether it merely adds noise and harm.</p>
+
+        <p>This is especially true in close communities, schools, synagogues, and workplaces where words travel quickly and consequences land deeply. A remark that feels minor to the speaker can become painful when heard by the subject or by someone close to them.</p>
+
+        <p>The safest path remains the same: limit speech to what is necessary, accurate, and constructive; avoid colorful retellings; and when in doubt, stay silent. Restraint is not weakness — it is wisdom.</p>
+
+        <div class="nutshell">
+            <strong>IN A NUTSHELL</strong>
+            Public information is not automatic permission to repeat negative details. Before speaking, check purpose and impact. If there is no real constructive need, silence protects everyone.
+        </div>
+    `
+};
+
 dailyLessons[34] = {
     title: "Committee Meetings",
     date: "February 21, 2026",
@@ -1970,6 +1990,26 @@ dailyLessons[55] = {
     `
 };
 
+dailyLessons[56] = {
+    title: "When Caution Is Allowed",
+    date: "March 13, 2026",
+    section: "Based on The SH Yomi Calendar — Day 56",
+    content: `
+        <p>There are times when a person must be cautious after hearing concerning information. The Torah does allow practical self-protection in certain cases — but only with great care and clear boundaries.</p>
+
+        <p>The Chofetz Chaim emphasizes a critical distinction: <strong>to be cautious is not the same as to believe</strong>. Caution means taking limited, responsible steps to prevent potential harm. Belief means deciding in your heart that the negative report is true. The first may be permitted in some situations; the second is forbidden without proper verification.</p>
+
+        <p>Therefore, when caution is needed, one should avoid emotional conclusions, avoid hatred, and avoid punitive actions. Do what is reasonably necessary to protect yourself, while still preserving the other person's dignity and presumption of innocence.</p>
+
+        <p>This mindset keeps a person both safe and righteous: careful in action, but clean in judgment.</p>
+
+        <div class="nutshell">
+            <strong>IN A NUTSHELL</strong>
+            Torah allows limited caution in some situations, but never allows accepting loshon hora as fact. Protect yourself responsibly, without hatred, humiliation, or unjust consequences.
+        </div>
+    `
+};
+
 dailyLessons[57] = {
     title: "A Proper Mindset",
     date: "March 14, 2026",
@@ -2324,10 +2364,90 @@ dailyLessons[64] = {
 
 // Initialize daily lesson display
 let currentDay = 1;
+let remoteLessonsLoaded = false;
+
+async function hydrateLessonsFromWebsite() {
+    if (remoteLessonsLoaded) return;
+
+    try {
+        let posts = [];
+
+        // Primary source: bundled snapshot to avoid Cloudflare runtime blocks.
+        const bundledResponse = await fetch('/cchf-lessons.json');
+        if (bundledResponse.ok) {
+            const bundledPayload = await bundledResponse.json();
+            posts = Array.isArray(bundledPayload?.lessons) ? bundledPayload.lessons : [];
+        }
+
+        // Fallback: server aggregator (if bundled file unavailable).
+        if (!posts.length) {
+            const response = await fetch('/api/chofetz-chaim/lessons');
+            if (!response.ok) {
+                throw new Error(`Lesson API failed: ${response.status}`);
+            }
+            const payload = await response.json();
+            posts = Array.isArray(payload?.lessons) ? payload.lessons : [];
+        }
+
+        posts = posts
+            .filter(post => post?.content?.rendered)
+            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+        if (!posts.length) throw new Error('No CCHF lessons returned');
+
+        const normalizedLessons = {};
+        posts.forEach((post, index) => {
+            const day = index + 1;
+            normalizedLessons[day] = {
+                title: decodeHtml(post?.title?.rendered || `Day ${day}`),
+                date: formatLessonDate(post?.date),
+                section: `Based on The SH Yomi Calendar — Day ${day}`,
+                content: normalizeLessonContent(post?.content?.rendered || '', post?.link || '')
+            };
+        });
+
+        Object.keys(dailyLessons).forEach(key => {
+            delete dailyLessons[key];
+        });
+        Object.assign(dailyLessons, normalizedLessons);
+
+        remoteLessonsLoaded = true;
+        if (!dailyLessons[currentDay]) currentDay = 1;
+
+        buildLessonIndex();
+        await loadLesson(currentDay);
+    } catch (error) {
+        console.warn('Unable to load full CCHF lesson set. Using bundled lessons.', error);
+    }
+}
+
+function decodeHtml(value) {
+    const textarea = document.createElement('textarea');
+    textarea.innerHTML = String(value || '');
+    return textarea.value.trim();
+}
+
+function formatLessonDate(value) {
+    if (!value) return '';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+}
+
+function normalizeLessonContent(content, sourceUrl) {
+    const cleaned = String(content || '').trim();
+    if (!sourceUrl) return cleaned;
+    return `${cleaned}<p style="margin-top:16px;"><a href="${sourceUrl}" target="_blank" rel="noopener">Read on cchf.global</a></p>`;
+}
 
 export function initDailyLessons() {
     loadLesson(currentDay);
     buildLessonIndex();
+    hydrateLessonsFromWebsite();
     
     document.getElementById('prevDayBtn')?.addEventListener('click', () => {
         if (currentDay > 1) {

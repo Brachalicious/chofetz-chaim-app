@@ -1,5 +1,5 @@
-import { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, collection, addDoc, getDocs, query, where, orderBy, serverTimestamp, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, limit } from './firebase-config.js?v=20260426c';
-import { initDailyLessons } from './daily-lessons.js?v=20260426c';
+import { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail, setPersistence, browserLocalPersistence, browserSessionPersistence, GoogleAuthProvider, signInWithPopup, collection, addDoc, getDocs, query, where, orderBy, serverTimestamp, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, limit } from './firebase-config.js?v=20260602a';
+import { initDailyLessons } from './daily-lessons.js?v=20260605e';
 import { initGoals } from './goals.js?v=20260426c';
 import { t, switchLanguage, updateUILanguage, currentLanguage } from './translations.js?v=20260426c';
 import { initVideoStreaming } from './video-streaming.js?v=20260426c';
@@ -47,6 +47,7 @@ const appContainer = document.getElementById('appContainer');
 const loginForm = document.getElementById('loginForm');
 const signupForm = document.getElementById('signupForm');
 const authError = document.getElementById('authError');
+const authSuccess = document.getElementById('authSuccess');
 const chatMessages = document.getElementById('chatMessages');
 const chatForm = document.getElementById('chatForm');
 const messageInput = document.getElementById('messageInput');
@@ -67,6 +68,9 @@ const dashboardView = document.getElementById('dashboardView');
 let recognition = null;
 let isRecording = false;
 let currentTranscript = '';
+let currentPlaybackAudio = null;
+let currentPlaybackButton = null;
+let currentPlaybackUrl = null;
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
@@ -85,6 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadDailyEncouragement();
     initDailyLessons();
     initVoiceRecognition();
+    initSpeechVoices();
     initLogoAssistant();
     initGoals();
     
@@ -112,6 +117,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+function initSpeechVoices() {
+    if (!window.speechSynthesis || typeof window.speechSynthesis.getVoices !== 'function') {
+        return;
+    }
+
+    window.speechSynthesis.getVoices();
+    window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+    };
+}
+
 // Check if user is logged in
 function checkAuth() {
     // Auth is now handled by onAuthStateChanged listener
@@ -126,6 +142,7 @@ function openAuthModal(tab = 'login') {
 function closeAuthModal() {
     authModal.classList.add('hidden');
     hideError();
+    hideSuccess();
 }
 
 function setHeaderAuthMode(loggedIn) {
@@ -180,9 +197,26 @@ function setupEventListeners() {
         console.log('📝 Login form submitted');
         const email = document.getElementById('loginEmail').value;
         const password = document.getElementById('loginPassword').value;
+        const rememberMe = document.getElementById('rememberMe')?.checked ?? true;
         console.log('Email:', email);
         console.log('Password length:', password.length);
-        await login(email, password);
+        await login(email, password, rememberMe);
+    });
+
+    // Forgot password
+    const forgotPasswordBtn = document.getElementById('forgotPasswordBtn');
+    if (forgotPasswordBtn) {
+        forgotPasswordBtn.addEventListener('click', async () => {
+            const email = document.getElementById('loginEmail').value.trim();
+            await sendPasswordReset(email);
+        });
+    }
+
+    // Google sign-in (shared handler for the login and signup tabs)
+    document.querySelectorAll('.btn-google').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            await loginWithGoogle();
+        });
     });
 
     // Signup form
@@ -235,6 +269,14 @@ function setupEventListeners() {
     document.getElementById('dedicationBtn').addEventListener('click', () => {
         window.location.href = '/dedication.html';
     });
+    const streaksBtn = document.getElementById('streaksBtn');
+    if (streaksBtn) {
+        streaksBtn.addEventListener('click', () => {
+            userDropdown.classList.add('hidden');
+            showDashboard();
+            switchDashboardTab('tracker');
+        });
+    }
     document.getElementById('dashboardBtn').addEventListener('click', showDashboard);
 
     // Dashboard tabs
@@ -1672,12 +1714,16 @@ function switchAuthTab(tab) {
     document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
     document.getElementById(`${tab}Form`).classList.add('active');
     hideError();
+    hideSuccess();
 }
 
 // Auth functions (Firebase)
-async function login(email, password) {
-    console.log('Login attempt:', email);
+async function login(email, password, rememberMe = true) {
+    console.log('Login attempt:', email, 'rememberMe:', rememberMe);
     try {
+        // "Remember me" -> persist the session across browser restarts (local).
+        // Unchecked -> only keep the session until the tab/window is closed.
+        await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
         await signInWithEmailAndPassword(auth, email, password);
         console.log('Login successful');
         // onAuthStateChanged will handle showing the app
@@ -1686,6 +1732,58 @@ async function login(email, password) {
         console.error('Error code:', error.code);
         console.error('Error message:', error.message);
         showError(error.message || 'Login failed. Please check your credentials.');
+    }
+}
+
+async function loginWithGoogle() {
+    console.log('Google login attempt');
+    try {
+        // Respect the "Remember me" checkbox for session persistence.
+        const rememberMe = document.getElementById('rememberMe')?.checked ?? true;
+        await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
+
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+        const userCredential = await signInWithPopup(auth, provider);
+        const user = userCredential.user;
+
+        // Create the Firestore user document on first Google sign-in only.
+        const userRef = doc(db, 'users', user.uid);
+        const existing = await getDoc(userRef);
+        if (!existing.exists()) {
+            await setDoc(userRef, {
+                name: user.displayName || (user.email ? user.email.split('@')[0] : 'User'),
+                email: user.email || '',
+                createdAt: serverTimestamp(),
+                streakCount: 0,
+                totalConversations: 0,
+                completedLessons: []
+            });
+        }
+        console.log('Google login successful');
+        // onAuthStateChanged will handle showing the app
+    } catch (error) {
+        console.error('Google login error:', error);
+        console.error('Error code:', error.code);
+        // The user closing the popup is not a real error worth surfacing loudly.
+        if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
+            return;
+        }
+        showError(error.message || 'Google sign-in failed. Please try again.');
+    }
+}
+
+async function sendPasswordReset(email) {
+    if (!email) {
+        showError(t('enterEmailForReset'));
+        return;
+    }
+    try {
+        await sendPasswordResetEmail(auth, email);
+        showSuccess(t('resetEmailSent'));
+    } catch (error) {
+        console.error('Password reset error:', error);
+        showError(error.message || 'Could not send reset email. Please try again.');
     }
 }
 
@@ -1724,6 +1822,7 @@ function logout() {
 }
 
 function showError(message) {
+    hideSuccess();
     authError.textContent = message;
     authError.classList.add('show');
     setTimeout(() => hideError(), 5000);
@@ -1731,6 +1830,18 @@ function showError(message) {
 
 function hideError() {
     authError.classList.remove('show');
+}
+
+function showSuccess(message) {
+    hideError();
+    if (!authSuccess) return;
+    authSuccess.textContent = message;
+    authSuccess.classList.add('show');
+    setTimeout(() => hideSuccess(), 6000);
+}
+
+function hideSuccess() {
+    if (authSuccess) authSuccess.classList.remove('show');
 }
 
 // Chat functions
@@ -1784,8 +1895,17 @@ async function sendMessage(message) {
     }
 }
 
+function fixSefariaZoharMarkdown(text) {
+    if (!text) return text;
+    return text.replace(/\[Zohar,\s*([A-Za-z]+)\]\(https?:\/\/www\.sefaria\.org\/Zohar\/?\)/gi, (_, raw) => {
+        const p = raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+        return `[Zohar, ${p}](https://www.sefaria.org/Zohar,_${p})`;
+    });
+}
+
 // Function to convert URLs and markdown links to clickable HTML
 function makeLinksClickable(text) {
+    text = fixSefariaZoharMarkdown(text);
     // First, handle markdown-style links [text](url)
     text = text.replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color: #2c5aa0; text-decoration: underline;">$1</a>');
     
@@ -1796,6 +1916,12 @@ function makeLinksClickable(text) {
     text = text.replace(/\n/g, '<br>');
     
     return text;
+}
+
+/** Plain text for SMS/WhatsApp/copy: markdown links are not tappable there; expose raw URLs. */
+function expandMarkdownLinksForShare(text) {
+    if (!text) return text;
+    return String(fixSefariaZoharMarkdown(text)).replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (_, label, url) => `${label}\n${url}`);
 }
 
 function addMessage(type, text, userQuestion = null) {
@@ -1817,6 +1943,7 @@ function addMessage(type, text, userQuestion = null) {
         img.style.width = '100%';
         img.style.height = '100%';
         img.style.objectFit = 'cover';
+        img.style.objectPosition = 'center 44%';
         avatar.appendChild(img);
     }
     
@@ -1865,42 +1992,170 @@ function addMessage(type, text, userQuestion = null) {
         messageDiv.appendChild(actionsDiv);
     }
     
-    // Remove welcome message if exists
-    const welcome = chatMessages.querySelector('.welcome-message');
-    if (welcome) {
-        welcome.remove();
+    // Dismiss welcome landing (hero + copy); move input bar back under chat + voice panel
+    const landing = chatMessages.querySelector('.welcome-landing');
+    if (landing) {
+        const inputBar = document.getElementById('chatInputBar');
+        const chatContainer = document.querySelector('.chat-container');
+        const voicePanel = document.getElementById('voiceRecordingPanel');
+        if (inputBar && chatContainer) {
+            inputBar.classList.remove('chat-input-welcome');
+            const send = document.getElementById('sendBtn');
+            if (send) {
+                send.classList.remove('send-btn-welcome');
+                send.innerHTML = '<span class="send-icon" aria-hidden="true">📤</span>';
+            }
+            const voice = document.getElementById('voiceBtn');
+            if (voice) voice.classList.remove('voice-btn-welcome');
+            if (voicePanel && voicePanel.parentNode === chatContainer) {
+                voicePanel.insertAdjacentElement('afterend', inputBar);
+            } else {
+                chatContainer.appendChild(inputBar);
+            }
+        }
+        landing.remove();
     }
     
     chatMessages.appendChild(messageDiv);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-function playMessage(text, button) {
-    // Cancel any ongoing speech
+async function playMessage(text, button) {
+    if (stopCurrentPlayback(button)) return;
+
+    const cleanText = cleanTextForSpeech(text);
+    if (!cleanText) return;
+
+    button.innerHTML = '⏳ Preparing human voice...';
+    button.disabled = true;
+
+    try {
+        const response = await fetch('/api/chofetz-chaim/speech', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: cleanText, language: currentLanguage })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Speech endpoint failed with ${response.status}`);
+        }
+
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audio = new Audio(audioUrl);
+
+        currentPlaybackAudio = audio;
+        currentPlaybackButton = button;
+        currentPlaybackUrl = audioUrl;
+
+        button.disabled = false;
+        button.innerHTML = '⏸️ Stop';
+
+        audio.onended = resetCurrentPlayback;
+        audio.onerror = () => {
+            resetCurrentPlayback();
+            speakWithBrowserFallback(cleanText, button);
+        };
+
+        await audio.play();
+    } catch (error) {
+        console.error('Human speech playback failed; falling back to browser voice:', error);
+        button.disabled = false;
+        speakWithBrowserFallback(cleanText, button);
+    }
+}
+
+function stopCurrentPlayback(button = null) {
+    if (currentPlaybackAudio) {
+        currentPlaybackAudio.pause();
+        currentPlaybackAudio.currentTime = 0;
+        resetCurrentPlayback();
+        return true;
+    }
+
     if (window.speechSynthesis.speaking) {
         window.speechSynthesis.cancel();
-        button.innerHTML = '🔊 Listen';
-        return;
+        if (button) button.innerHTML = '🔊 Listen';
+        return true;
     }
-    
+
+    return false;
+}
+
+function resetCurrentPlayback() {
+    if (currentPlaybackButton) {
+        currentPlaybackButton.disabled = false;
+        currentPlaybackButton.innerHTML = '🔊 Listen';
+    }
+    if (currentPlaybackUrl) {
+        URL.revokeObjectURL(currentPlaybackUrl);
+    }
+
+    currentPlaybackAudio = null;
+    currentPlaybackButton = null;
+    currentPlaybackUrl = null;
+}
+
+function speakWithBrowserFallback(text, button) {
+    if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.cancel();
+    }
+
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 0.9; // Slightly slower for clarity
-    utterance.pitch = 1.0;
+    const speechLang = currentLanguage === 'he' ? 'he-IL' : 'en-US';
+    utterance.lang = speechLang;
+    utterance.voice = getPreferredSpeechVoice(speechLang);
+    utterance.rate = currentLanguage === 'he' ? 0.82 : 0.86;
+    utterance.pitch = 0.95;
     utterance.volume = 1.0;
-    
-    // Update button during speech
+
     button.innerHTML = '⏸️ Stop';
-    
+
     utterance.onend = () => {
         button.innerHTML = '🔊 Listen';
     };
-    
+
     utterance.onerror = () => {
         button.innerHTML = '🔊 Listen';
         console.error('Speech synthesis error');
     };
-    
+
     window.speechSynthesis.speak(utterance);
+}
+
+function cleanTextForSpeech(text) {
+    return String(text)
+        // Read markdown links as the label only, not the full URL.
+        .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '$1')
+        .replace(/https?:\/\/\S+/g, '')
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/[#*_`~>]/g, '')
+        .replace(/[📖🕊️✨💝🙏📤🔊⏸️✅❌⚠️]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function getPreferredSpeechVoice(lang) {
+    if (!window.speechSynthesis || typeof window.speechSynthesis.getVoices !== 'function') {
+        return null;
+    }
+
+    const voices = window.speechSynthesis.getVoices();
+    if (!voices.length) return null;
+
+    const matchingVoices = voices.filter(voice => voice.lang && voice.lang.toLowerCase().startsWith(lang.slice(0, 2).toLowerCase()));
+    const preferredNames = lang.startsWith('he')
+        ? ['Carmit', 'Hebrew']
+        : ['Samantha', 'Alex', 'Karen', 'Moira', 'Daniel', 'Microsoft Aria', 'Google US English', 'Google UK English', 'Victoria'];
+
+    for (const preferredName of preferredNames) {
+        const voice = matchingVoices.find(candidate =>
+            candidate.name.toLowerCase().includes(preferredName.toLowerCase())
+        );
+        if (voice) return voice;
+    }
+
+    return matchingVoices.find(voice => voice.localService) || matchingVoices[0] || null;
 }
 
 function showTypingIndicator() {
@@ -1916,7 +2171,8 @@ function showTypingIndicator() {
     img.className = 'bot-avatar-img';
     img.style.width = '100%';
     img.style.height = '100%';
-    img.style.objectFit = 'contain';
+    img.style.objectFit = 'cover';
+    img.style.objectPosition = 'center 44%';
     avatar.appendChild(img);
     
     const content = document.createElement('div');
@@ -1953,13 +2209,15 @@ Whether it is for a shidduch, a job referral, or just among family or friends, t
 Hours: Evenings from 9:00 to 10:30 PM
 
 CALL: 718-951-3696 📞`;
+
+    const shareAnswerText = expandMarkdownLinksForShare(messageText);
     
     let fullShareContent = '';
     
     if (userQuestion) {
-        fullShareContent = `Question: ${userQuestion}\n\nAnswer from Chofetz Chaim:\n${messageText}\n\n---\n\n${disclaimer}\n\n🕊️ Chofetz Chaim App`;
+        fullShareContent = `Question: ${userQuestion}\n\nAnswer from Chofetz Chaim:\n${shareAnswerText}\n\n---\n\n${disclaimer}\n\n🕊️ Chofetz Chaim App`;
     } else {
-        fullShareContent = `Insight from Chofetz Chaim on Shmiras HaLashon:\n\n${messageText}\n\n---\n\n${disclaimer}\n\n🕊️ Chofetz Chaim App`;
+        fullShareContent = `Insight from Chofetz Chaim on Shmiras HaLashon:\n\n${shareAnswerText}\n\n---\n\n${disclaimer}\n\n🕊️ Chofetz Chaim App`;
     }
     
     // Create share modal
@@ -2002,15 +2260,15 @@ CALL: 718-951-3696 📞`;
         previewHTML = `
             <div style="margin-bottom: 10px;">
                 <strong style="color: #2c5aa0;">Question:</strong>
-                <p style="margin: 5px 0; font-size: 0.9em; color: #333;">${userQuestion}</p>
+                <p style="margin: 5px 0; font-size: 0.9em; color: #333;">${escapeHtml(userQuestion)}</p>
             </div>
             <div style="margin-bottom: 10px;">
                 <strong style="color: #667eea;">Answer:</strong>
-                <p style="margin: 5px 0; font-size: 0.9em; color: #333;">${messageText}</p>
+                <p style="margin: 5px 0; font-size: 0.9em; color: #333;">${makeLinksClickable(escapeHtml(messageText))}</p>
             </div>
         `;
     } else {
-        previewHTML = `<p style="margin: 0; font-size: 0.9em;">${messageText}</p>`;
+        previewHTML = `<p style="margin: 0; font-size: 0.9em;">${makeLinksClickable(escapeHtml(messageText))}</p>`;
     }
     
     modalContent.innerHTML = `
@@ -2060,8 +2318,8 @@ CALL: 718-951-3696 📞`;
     document.getElementById('shareTwitter').onclick = () => {
         // Twitter has character limits, so share a shorter version
         const twitterText = userQuestion ? 
-            `Q: ${userQuestion}\n\nA: ${messageText}\n\n📞 For halachic questions: 718-951-3696\n🕊️ Chofetz Chaim App` :
-            `${messageText}\n\n📞 Shmiras Haloshon Hotline: 718-951-3696\n🕊️ Chofetz Chaim App`;
+            `Q: ${userQuestion}\n\nA: ${shareAnswerText}\n\n📞 For halachic questions: 718-951-3696\n🕊️ Chofetz Chaim App` :
+            `${shareAnswerText}\n\n📞 Shmiras Haloshon Hotline: 718-951-3696\n🕊️ Chofetz Chaim App`;
         const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(twitterText)}`;
         window.open(url, '_blank');
         modal.remove();
@@ -2093,6 +2351,8 @@ CALL: 718-951-3696 📞`;
 
 // Daily encouragement
 async function loadDailyEncouragement() {
+    // Some views don't render #dailyMessage; avoid breaking app init in that case.
+    if (!dailyMessage) return;
     try {
         const response = await fetch('/api/chofetz-chaim/daily-encouragement');
         const data = await response.json();

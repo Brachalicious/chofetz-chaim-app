@@ -21,6 +21,12 @@ const translations = {
         password: "Password",
         fullName: "Full Name",
         createAccount: "Create Account",
+        rememberMe: "Remember me",
+        forgotPassword: "Forgot password?",
+        orDivider: "or",
+        continueWithGoogle: "Continue with Google",
+        enterEmailForReset: "Please enter your email above, then tap \"Forgot password?\".",
+        resetEmailSent: "Password reset email sent. Please check your inbox (and spam folder).",
         authSaveNote: "Create an account to save your progress, goals, streaks, completed lessons, and learning log. Without an account your data stays on this device only and can be lost.",
         guestAuthHint: "🔒 Sign up to save your progress & goals",
 
@@ -52,6 +58,7 @@ const translations = {
         quickQuestion2: "How can I avoid gossip at work?",
         quickQuestion3: "What should I do if I hear lashon hara?",
         messagePlaceholder: "Ask about Shmiras HaLashon...",
+        sendQuestion: "Send",
         
         // Dashboard
         dashboardTitle: "Your Shmiras HaLashon Journey",
@@ -453,6 +460,12 @@ const translations = {
         password: "סיסמה",
         fullName: "שם מלא",
         createAccount: "צור חשבון",
+        rememberMe: "זכור אותי",
+        forgotPassword: "שכחת סיסמה?",
+        orDivider: "או",
+        continueWithGoogle: "המשך עם Google",
+        enterEmailForReset: "אנא הזינו את האימייל שלכם למעלה, ולאחר מכן לחצו על \"שכחת סיסמה?\".",
+        resetEmailSent: "נשלח אימייל לאיפוס הסיסמה. אנא בדקו את תיבת הדואר הנכנס (וגם את תיקיית הספאם).",
         authSaveNote: "צרו חשבון כדי לשמור את ההתקדמות, היעדים, הרצפים, השיעורים שהושלמו ויומן הלימוד שלכם. ללא חשבון הנתונים נשמרים רק במכשיר זה ועלולים ללכת לאיבוד.",
         guestAuthHint: "🔒 הירשמו כדי לשמור התקדמות ויעדים",
 
@@ -484,6 +497,7 @@ const translations = {
         quickQuestion2: "איך להימנע מרכילות בעבודה?",
         quickQuestion3: "מה לעשות אם שומעים לשון הרע?",
         messagePlaceholder: "שאלו על שמירת הלשון...",
+        sendQuestion: "שלח",
         
         // Dashboard
         dashboardTitle: "המסע שלך בשמירת הלשון",

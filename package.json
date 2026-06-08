@@ -6,7 +6,10 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc",
+    "dev:3002": "PORT=3002 tsx watch src/server.ts",
+    "build": "npm run build:server && npm run typecheck:functions",
+    "build:server": "tsc",
+    "typecheck:functions": "tsc -p tsconfig.netlify.json --noEmit",
     "deploy:preview": "netlify deploy --build",
     "deploy:prod": "netlify deploy --build --prod",
     "start": "node dist/server.js",

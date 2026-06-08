@@ -7,7 +7,8 @@ import chofetzChaimRouter from './routes/chofetzChaim.js';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT) || 3000;
+const HOST = process.env.HOST || '0.0.0.0';
 
 // Middleware
 app.use(cors());
@@ -79,8 +80,8 @@ app.use((req, res) => {
   });
 });
 
-// Start server
-app.listen(PORT, () => {
+// Start server (bind 0.0.0.0 so http://127.0.0.1 and http://localhost both work reliably)
+app.listen(PORT, HOST, () => {
   console.log('='.repeat(60));
   console.log('🕊️  Chofetz Chaim Shmiras HaLashon App');
   console.log('📖 In honor of my brother Yosef Yisroel Meyer');
@@ -95,11 +96,13 @@ app.listen(PORT, () => {
   console.log('   reap infinite merit upon any and all learning');
   console.log('   that is done via this app! ❤️');
   console.log('='.repeat(60));
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running:`);
+  console.log(`   http://127.0.0.1:${PORT}  (use this in Firefox if localhost fails)`);
+  console.log(`   http://localhost:${PORT}`);
   console.log(`📋 API endpoints:`);
-  console.log(`   POST http://localhost:${PORT}/api/chofetz-chaim/chat`);
-  console.log(`   GET  http://localhost:${PORT}/api/chofetz-chaim/daily-encouragement`);
-  console.log(`   GET  http://localhost:${PORT}/health`);
+  console.log(`   POST http://127.0.0.1:${PORT}/api/chofetz-chaim/chat`);
+  console.log(`   GET  http://127.0.0.1:${PORT}/api/chofetz-chaim/daily-encouragement`);
+  console.log(`   GET  http://127.0.0.1:${PORT}/health`);
   console.log('='.repeat(60));
   
   if (!process.env.OPENAI_API_KEY) {

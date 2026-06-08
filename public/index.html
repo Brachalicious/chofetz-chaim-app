@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>Chofetz Chaim - Shmiras HaLashon App</title>
-    <link rel="stylesheet" href="/styles.css?v=20260426h">
+    <link rel="stylesheet" href="/styles.css?v=20260602a">
 </head>
 <body>
     <!-- Login/Signup Modal (optional — use header buttons while browsing as guest) -->
@@ -52,7 +52,24 @@
                         </button>
                     </div>
                 </div>
+                <div class="login-options">
+                    <label class="remember-me">
+                        <input type="checkbox" id="rememberMe" checked>
+                        <span data-i18n="rememberMe">Remember me</span>
+                    </label>
+                    <button type="button" id="forgotPasswordBtn" class="link-btn" data-i18n="forgotPassword">Forgot password?</button>
+                </div>
                 <button type="submit" class="btn-primary" data-i18n="signIn">Sign In</button>
+                <div class="auth-divider"><span data-i18n="orDivider">or</span></div>
+                <button type="button" class="btn-google">
+                    <svg class="btn-google-icon" viewBox="0 0 48 48" aria-hidden="true">
+                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                    </svg>
+                    <span data-i18n="continueWithGoogle">Continue with Google</span>
+                </button>
             </form>
 
             <!-- Signup Form -->
@@ -75,9 +92,20 @@
                     </div>
                 </div>
                 <button type="submit" class="btn-primary" data-i18n="createAccount">Create Account</button>
+                <div class="auth-divider"><span data-i18n="orDivider">or</span></div>
+                <button type="button" class="btn-google">
+                    <svg class="btn-google-icon" viewBox="0 0 48 48" aria-hidden="true">
+                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                    </svg>
+                    <span data-i18n="continueWithGoogle">Continue with Google</span>
+                </button>
             </form>
 
             <div id="authError" class="error-message"></div>
+            <div id="authSuccess" class="success-message"></div>
         </div>
     </div>
 
@@ -136,44 +164,60 @@
             <div id="chatView" class="view">
                 <div class="chat-container">
                     <div id="chatMessages" class="chat-messages">
-                        <div class="welcome-message">
+                        <div class="welcome-landing">
                             <div class="welcome-content-wrapper">
-                                <div class="welcome-text">
-                                    <h2 data-i18n="welcomeTitle">Shalom! 👋</h2>
-                                    <p data-i18n="welcomeMessage">Welcome to your personal Shmiras HaLashon guide. Ask me anything about guarding your speech, avoiding lashon hara, or living the teachings of the Chofetz Chaim.</p>
-                                    
-                                    <!-- Important Disclaimer -->
-                                    <div style="margin: 20px 0; padding: 20px; background: #fff3cd; border-left: 4px solid #ff9800; border-radius: 8px; color: #856404;">
-                                        <p style="margin: 0 0 10px 0; font-weight: bold; font-size: 1em;" data-i18n="importantNotice">⚠️ Important Notice</p>
-                                        <p style="margin: 0 0 10px 0; font-size: 0.9em; line-height: 1.5;" data-i18n="notRabbi">
-                                            This chatbot is <strong>not a rabbi</strong> and should not be relied upon for final halachic decisions. If answers are unclear or if you have further questions, please consult a qualified rabbi or call:
-                                        </p>
-                                        <div style="background: white; padding: 15px; border-radius: 8px; margin-top: 15px; border: 2px solid #ff9800;">
-                                            <p style="margin: 0 0 8px 0; font-weight: bold; color: #2c5aa0; font-size: 1.1em;" data-i18n="hotlineTitle">📞 THE SHMIRAS HALOSHON SHAILA HOTLINE</p>
-                                            <p style="margin: 0 0 8px 0; font-size: 0.9em; line-height: 1.6;" data-i18n="hotlineDescription">
-                                                <em>To say or not to say?</em> Whether it is for a shidduch, a job referral, or just among family or friends, the wrong words can do irreparable harm. And sometimes, so can silence. Our Shaila Hotline puts you in contact with expert rabbonim so that before you speak, you can be sure.
-                                            </p>
-                                            <p style="margin: 8px 0 0 0; font-size: 0.85em;"><strong data-i18n="hotlineHours">Hours:</strong> <span data-i18n="hotlineTime">Evenings from 9:00 to 10:30 PM</span></p>
-                                            <p style="margin: 8px 0 0 0;">
-                                                <a href="tel:7189513696" style="display: inline-block; background: #2c5aa0; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; margin-top: 10px;" data-i18n="callNow">
-                                                    📞 CALL: 718-951-3696
-                                                </a>
-                                            </p>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="quick-questions">
-                                        <p><strong data-i18n="tryAsking">Try asking:</strong></p>
-                                        <button class="quick-q" data-q="What is lashon hara?" data-i18n="quickQuestion1">What is lashon hara?</button>
-                                        <button class="quick-q" data-q="How can I avoid gossip at work?" data-i18n="quickQuestion2">How can I avoid gossip at work?</button>
-                                        <button class="quick-q" data-q="What should I do if I hear lashon hara?" data-i18n="quickQuestion3">What should I do if I hear lashon hara?</button>
-                                    </div>
+                                <div class="welcome-image welcome-hero">
+                                    <img class="chofetz-chaim-hero-img" src="/chofetz_chaim.svg" alt="Chofetz Chaim" />
+                                    <p class="portrait-caption portrait-caption--hero" data-i18n="chofetzChaimCaption">The Chofetz Chaim</p>
                                 </div>
-                                
-                                <div class="welcome-image">
-                                    <div class="chofetz-chaim-portrait">
-                                        <img src="/chofetz_chaim.svg" alt="Chofetz Chaim" />
-                                        <p class="portrait-caption" data-i18n="chofetzChaimCaption">The Chofetz Chaim</p>
+                                <div id="chatInputBar" class="chat-input-container chat-input-welcome">
+                                    <form id="chatForm">
+                                        <button type="button" id="voiceBtn" class="voice-btn voice-btn-welcome" title="Record your question">
+                                            <span class="voice-icon" aria-hidden="true">🎤</span>
+                                        </button>
+                                        <input 
+                                            type="text" 
+                                            id="messageInput" 
+                                            data-i18n="messagePlaceholder"
+                                            placeholder="Ask about Shmiras HaLashon..."
+                                            autocomplete="off"
+                                        >
+                                        <button type="submit" id="sendBtn" class="send-btn send-btn-welcome">
+                                            <span class="send-label" data-i18n="sendQuestion">Send</span>
+                                        </button>
+                                    </form>
+                                </div>
+                                <div class="welcome-message">
+                                    <div class="welcome-text">
+                                        <h2 data-i18n="welcomeTitle">Shalom! 👋</h2>
+                                        <p data-i18n="welcomeMessage">Welcome to your personal Shmiras HaLashon guide. Ask me anything about guarding your speech, avoiding lashon hara, or living the teachings of the Chofetz Chaim.</p>
+                                        
+                                        <!-- Important Disclaimer -->
+                                        <div class="welcome-disclaimer" style="margin: 20px 0; padding: 20px; background: #fff3cd; border-left: 4px solid #ff9800; border-radius: 8px; color: #856404; text-align: start;">
+                                            <p style="margin: 0 0 10px 0; font-weight: bold; font-size: 1em;" data-i18n="importantNotice">⚠️ Important Notice</p>
+                                            <p style="margin: 0 0 10px 0; font-size: 0.9em; line-height: 1.5;" data-i18n="notRabbi">
+                                                This chatbot is <strong>not a rabbi</strong> and should not be relied upon for final halachic decisions. If answers are unclear or if you have further questions, please consult a qualified rabbi or call:
+                                            </p>
+                                            <div style="background: white; padding: 15px; border-radius: 8px; margin-top: 15px; border: 2px solid #ff9800;">
+                                                <p style="margin: 0 0 8px 0; font-weight: bold; color: #2c5aa0; font-size: 1.1em;" data-i18n="hotlineTitle">📞 THE SHMIRAS HALOSHON SHAILA HOTLINE</p>
+                                                <p style="margin: 0 0 8px 0; font-size: 0.9em; line-height: 1.6;" data-i18n="hotlineDescription">
+                                                    <em>To say or not to say?</em> Whether it is for a shidduch, a job referral, or just among family or friends, the wrong words can do irreparable harm. And sometimes, so can silence. Our Shaila Hotline puts you in contact with expert rabbonim so that before you speak, you can be sure.
+                                                </p>
+                                                <p style="margin: 8px 0 0 0; font-size: 0.85em;"><strong data-i18n="hotlineHours">Hours:</strong> <span data-i18n="hotlineTime">Evenings from 9:00 to 10:30 PM</span></p>
+                                                <p style="margin: 8px 0 0 0;">
+                                                    <a href="tel:7189513696" style="display: inline-block; background: #2c5aa0; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; margin-top: 10px;" data-i18n="callNow">
+                                                        📞 CALL: 718-951-3696
+                                                    </a>
+                                                </p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="quick-questions">
+                                            <p><strong data-i18n="tryAsking">Try asking:</strong></p>
+                                            <button class="quick-q" data-q="What is lashon hara?" data-i18n="quickQuestion1">What is lashon hara?</button>
+                                            <button class="quick-q" data-q="How can I avoid gossip at work?" data-i18n="quickQuestion2">How can I avoid gossip at work?</button>
+                                            <button class="quick-q" data-q="What should I do if I hear lashon hara?" data-i18n="quickQuestion3">What should I do if I hear lashon hara?</button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -202,23 +246,6 @@
                         </div>
                     </div>
                     
-                    <div class="chat-input-container">
-                        <form id="chatForm">
-                            <button type="button" id="voiceBtn" class="voice-btn" title="Record your question">
-                                <span class="voice-icon">🎤</span>
-                            </button>
-                            <input 
-                                type="text" 
-                                id="messageInput" 
-                                data-i18n="messagePlaceholder"
-                                placeholder="Ask about Shmiras HaLashon..."
-                                autocomplete="off"
-                            >
-                            <button type="submit" id="sendBtn" class="send-btn">
-                                <span class="send-icon">📤</span>
-                            </button>
-                        </form>
-                    </div>
                 </div>
             </div>
 
@@ -1160,7 +1187,7 @@
     <!-- Modules imported by app.js are loaded through its import graph; no redundant <script> tags. -->
     <script type="module" src="/progress-tracker.js?v=20260426c"></script>
     <script type="module" src="/sefer-shmiras-halashon.js?v=20260426c"></script>
-    <script type="module" src="/app.js?v=20260426c"></script>
+    <script type="module" src="/app.js?v=20260602a"></script>
 </body>
 </html>
 

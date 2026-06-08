@@ -180,7 +180,11 @@ body {
 
 .auth-header h1 {
     font-size: clamp(1.4rem, 3vw, 2.1rem);
-    color: var(--primary-color);
+    background: linear-gradient(90deg, #d4a93a 0%, #c58f2a 34%, #764ba2 70%, #667eea 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
     margin-bottom: 10px;
     line-height: 1.2;
 }
@@ -388,6 +392,116 @@ body {
     display: block;
 }
 
+.success-message {
+    margin-top: 15px;
+    padding: 12px;
+    background: #e9f9ee;
+    color: #1b7a3e;
+    border-radius: 8px;
+    text-align: center;
+    display: none;
+}
+
+.success-message.show {
+    display: block;
+}
+
+.login-options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-weight: 500;
+    color: var(--text-dark);
+    cursor: pointer;
+    user-select: none;
+}
+
+.remember-me input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--secondary-color);
+}
+
+.link-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--secondary-color);
+    font-size: 0.95em;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.link-btn:hover {
+    opacity: 0.8;
+}
+
+/* Auth divider ("or") */
+.auth-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+    margin: 18px 0;
+    color: var(--text-light, #888);
+    font-size: 0.9em;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: rgba(0, 0, 0, 0.12);
+}
+
+/* Google sign-in button */
+.btn-google {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px 16px;
+    background: #fff;
+    color: #3c4043;
+    border: 1px solid #dadce0;
+    border-radius: 8px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-google:hover {
+    background: #f7f8f8;
+    box-shadow: 0 1px 3px rgba(60, 64, 67, 0.2);
+    border-color: #d2d3d6;
+}
+
+.btn-google:active {
+    background: #f1f3f4;
+}
+
+.btn-google-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
 /* App Header */
 .app-header {
     background: var(--bg-white);
@@ -414,11 +528,15 @@ body {
     align-self: start;
     font-family: inherit;
     font-size: clamp(1.1rem, 2.2vw, 1.5rem);
-    color: #2c5aa0;
+    background: linear-gradient(90deg, #d4a93a 0%, #c58f2a 34%, #764ba2 70%, #667eea 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
     font-weight: 700;
     white-space: normal;
     letter-spacing: 0.5px;
-    text-shadow: 0 1px 2px rgba(44, 90, 160, 0.12);
+    text-shadow: 0 1px 2px rgba(118, 75, 162, 0.15);
     line-height: 1.2;
     margin: 8px 0 0;
     text-align: left;
@@ -858,10 +976,18 @@ body {
     padding: 30px;
 }
 
+.welcome-landing {
+    text-align: center;
+    max-width: none;
+    width: calc(100% + 60px);
+    margin: -8px -30px 20px;
+    box-sizing: border-box;
+}
+
 .welcome-message {
     text-align: center;
-    max-width: 600px;
-    margin: 50px auto;
+    width: 100%;
+    margin: 0;
 }
 
 .welcome-message h2 {
@@ -897,7 +1023,7 @@ body {
     background: var(--secondary-color);
     color: white;
     border-color: var(--secondary-color);
-    transform: translateX(5px);
+    transform: translateY(-2px);
 }
 
 /* Message Bubbles */
@@ -1316,6 +1442,72 @@ body {
 .send-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+/* Welcome: input directly under portrait — white field, black type, centered */
+.chat-input-welcome {
+    padding: 6px 16px 14px;
+    border-top: none;
+    background: transparent;
+}
+
+.chat-input-welcome #chatForm {
+    max-width: min(540px, 100%);
+    margin: 0 auto;
+    align-items: center;
+}
+
+.chat-input-welcome #messageInput {
+    flex: 1;
+    background: #fff;
+    color: #111;
+    border: 1px solid #1a1a1a;
+    border-radius: 10px;
+}
+
+.chat-input-welcome #messageInput::placeholder {
+    color: #555;
+}
+
+.chat-input-welcome #messageInput:focus {
+    outline: none;
+    border-color: #111;
+    box-shadow: 0 0 0 1px #111;
+}
+
+.chat-input-welcome .voice-btn-welcome,
+.chat-input-welcome .send-btn-welcome {
+    background: #fff;
+    color: #111;
+    border: 1px solid #1a1a1a;
+    margin-right: 0;
+}
+
+.chat-input-welcome .voice-btn-welcome:hover,
+.chat-input-welcome .send-btn-welcome:hover {
+    background: #f0f0f0;
+    transform: none;
+}
+
+.chat-input-welcome .send-btn-welcome {
+    width: auto;
+    min-width: 4.75rem;
+    height: 48px;
+    border-radius: 10px;
+    padding: 0 18px;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.chat-input-welcome .send-btn-welcome .send-label {
+    color: #111;
+}
+
+.chat-input-welcome .voice-btn-welcome.recording {
+    background: #fff;
+    color: #b00020;
+    border-color: #b00020;
+    animation: none;
 }
 
 /* Dashboard */
@@ -5057,15 +5249,19 @@ button.logo.logo-assistant-trigger:active {
 
 /* Mobile Devices (max 768px) */
 @media (max-width: 768px) {
-    /* Welcome Portrait Mobile Layout */
-    .welcome-content-wrapper {
-        flex-direction: column;
+    /* Match .chat-messages horizontal padding (10px) for full-bleed hero */
+    .welcome-landing {
+        width: calc(100% + 20px);
+        margin-left: -10px;
+        margin-right: -10px;
     }
     
-    .welcome-image {
-        width: 100%;
-        max-width: 300px;
-        margin: 0 auto;
+    .welcome-image.welcome-hero {
+        max-width: 100%;
+    }
+    
+    .chofetz-chaim-hero-img {
+        max-height: min(68vh, calc(100dvh - 220px));
     }
     
     /* Base Typography */
@@ -5726,6 +5922,10 @@ button.logo.logo-assistant-trigger:active {
         height: 250px;
     }
     
+    .chofetz-chaim-hero-img {
+        max-height: min(38vh, 200px);
+    }
+    
     .bot-display {
         height: 200px;
     }
@@ -5771,51 +5971,66 @@ button.logo.logo-assistant-trigger:active {
     }
 }
 
-/* Welcome Message Portrait Layout */
+/* Welcome: full-width hero portrait (image only — no card frame), text below */
 .welcome-content-wrapper {
     display: flex;
-    gap: 30px;
-    align-items: flex-start;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(12px, 2vw, 20px);
+    width: 100%;
+}
+
+.welcome-image.welcome-hero {
+    flex-shrink: 0;
+    width: 100%;
+    max-width: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0;
+}
+
+.chofetz-chaim-hero-img {
+    display: block;
+    width: min(100%, 760px);
+    height: clamp(240px, 50vh, 520px);
+    max-height: min(62vh, calc(100dvh - 290px));
+    margin: 0 auto 6px;
+    object-fit: cover;
+    object-position: center 22%;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+.portrait-caption--hero {
+    font-size: clamp(0.8rem, 2.2vw, 0.95rem);
+    color: #3d4a63;
+    font-weight: 600;
+    margin: 4px 0 0;
+    text-shadow: none;
 }
 
 .welcome-text {
-    flex: 1;
-    min-width: 0;
-}
-
-.welcome-image {
-    flex-shrink: 0;
-    width: 280px;
-}
-
-.chofetz-chaim-portrait {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 12px;
-    padding: 15px;
-    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
-    text-align: center;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.chofetz-chaim-portrait:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 32px rgba(102, 126, 234, 0.4);
-}
-
-.chofetz-chaim-portrait img {
+    flex: 0 1 auto;
     width: 100%;
-    height: auto;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    background: white;
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 0 12px;
+    box-sizing: border-box;
 }
 
-.portrait-caption {
-    font-size: 0.9em;
-    color: white;
-    font-weight: 600;
-    margin: 0;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+.welcome-text > h2,
+.welcome-text > p:first-of-type {
+    text-align: center;
+}
+
+.welcome-text .quick-questions {
+    text-align: center;
+}
+
+.welcome-text .quick-q {
+    text-align: center;
 }
 
 /* Dark Mode Support (Future Enhancement) */
